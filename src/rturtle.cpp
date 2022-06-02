@@ -96,14 +96,14 @@ static void refreshWorld()
 	interactWithUser();
 	pWorld->frame_count++;
 	pWorld->frame_count%=pTurtle->move_speed;
-	if (pTurtle->move_speed>100)
+	if (pTurtle->move_speed>1000)
 	{
 		int s=pTurtle->move_speed/100;
 		if (pWorld->frame_count%s!=1)
 		{
 			return; //skip frame
 		}
-		usleep(10);
+		usleep(1000);
 	}
 	else
 	{
