@@ -135,6 +135,9 @@ extern "C" {            // Prevents name mangling of functions
 	void ImageFillEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, Color fillColor);
 	void ImageFillCircleEx(Image* dst, int cx, int cy, int radius, Color fillColor);
 	void ImageFloodFill(Image* dst,int x, int y, Color borderColor, Color fillColor);
+	void ImageFillPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, Color fillColor);
+	void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color);
+	void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vertice, int lineWidth, Color color);
 	
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions

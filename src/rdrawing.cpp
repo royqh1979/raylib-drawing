@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <queue>
 #include <string.h>
+#include <vector>
+#include <map>
+#include <memory>
 
 #define COLOR_EQUAL(col1, col2) ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a))
 
@@ -409,5 +412,186 @@ void ImageFloodFill(Image* dst,int x, int y, Color borderColor, Color fillColor)
 		queueX.push(x-1);queueY.push(y);
 	}
 	free(flags);
-
 }
+
+
+struct PolyEdge {
+	int x1;			// x1 is always <= x2
+	int x2;
+	int x;			// x at the current scanline
+	int min_y;
+	int max_y;
+	int dx;
+	int dy;
+	int counter;    // use it to update x
+	//	int min_y_buddy; //don't need
+	int max_y_buddy; 
+};
+
+using PPolyEdge = std::shared_ptr<PolyEdge>;
+
+static void doDrawFillLineH(Image* dst,int x1,int x2, int y,Color color) {
+	for (int x=x1;x<=x2;x++) {
+		ImageDrawPixel(dst,x,y,color);
+	}
+}
+
+static bool sortPolyEdgeByx(PPolyEdge e1,PPolyEdge e2) {
+	return e1->x<e2->x;
+}
+
+// fill polygon using scan line fill algorithm (http://www.cad.zju.edu.cn/home/zhx/CG/2016/lib/exe/fetch.php?media=fillalgorithm.pdf)
+void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vertice, Color color) {
+	
+	// Create Edge Table
+	std::multimap<int,PPolyEdge> edgeTable;
+	std::vector<PPolyEdge> edgeList;
+	int min_y=-1,max_y=1;
+	for (int i=0;i<num_vertice;i++) {
+		PPolyEdge e=std::make_shared<PolyEdge>();
+		int i2=(i+1);
+		int i0=(i-1);
+		if (i2>=num_vertice) 
+			i2=0;
+		if (i0<0)
+			i0=num_vertice-1;
+		int x1=vertice_x[i];
+		int y1=vertice_y[i];
+		int x2=vertice_x[i2];
+		int y2=vertice_y[i2];
+		if (y2>y1) {
+			e->max_y = y2;
+			e->max_y_buddy = i2;
+			e->min_y = y1;
+			//			e->min_y_buddy = i0;
+		} else {
+			e->max_y = y1;
+			e->max_y_buddy = i0;
+			e->min_y = y2;
+			//			e->min_y_buddy = i2;			
+		}
+		if (x2<x1) {
+			std::swap(x1,x2);
+			std::swap(y1,y2);
+		}
+		e->x1=x1;
+		e->x2=x2;
+		e->dx = x2 - x1;
+		e->dy = y2 - y1;
+		e->counter=0;
+		if (e->dy>0) {
+			e->x=e->x1;
+		} else {
+			e->x=e->x2;
+		}
+		edgeTable.insert(std::pair<int,PPolyEdge>{e->min_y,e});
+		edgeList.push_back(e);
+		if (0==i) {
+			min_y = e->min_y;
+			max_y = e->max_y;
+		} else {
+			if (e->min_y<min_y)
+				min_y=e->min_y;
+			if (e->max_y>max_y)
+				max_y=e->max_y;
+		}
+		//		TraceLog(LOG_WARNING,"Edge %d: x1 %d x2 %d min_y %d max_y%d x %d max_y buddy %d",
+		//			i,e->x1,e->x2,e->min_y,e->max_y,e->x,e->max_y_buddy);
+	}
+	std::vector<PPolyEdge> acl;
+	std::vector<int> intersects;
+	std::vector<PPolyEdge> horizontalEdges;
+	for (int y=min_y;y<=max_y;y++) {
+		intersects.clear();
+		horizontalEdges.clear();
+		//add edges to act;
+		auto edges = edgeTable.equal_range(y);
+		if (edges.first!=std::end(edgeTable)) {
+			for (auto i=edges.first;i!=edges.second; i++) {
+				PPolyEdge e = (*i).second;
+				acl.push_back(e);	
+			}
+		}
+		//sort acl by x;
+		std::sort(acl.begin(),acl.end(),sortPolyEdgeByx);
+		for (int i=0;i<acl.size();i++) {
+			PPolyEdge e1 = acl[i];
+			
+			if (e1->dy==0) {
+				horizontalEdges.push_back(e1);
+			} else if (y==e1->min_y) { 
+				intersects.push_back(e1->x);
+			} else if (y==e1->max_y) {
+				PPolyEdge e2=edgeList[e1->max_y_buddy];
+				if (y!=e2->min_y) 
+					intersects.push_back(e1->x);
+			} else {
+				intersects.push_back(e1->x);
+			}
+		}
+		//remove edges that no need; 
+		//update edges' x
+		auto it=acl.begin();
+		while (it!=acl.end()) {
+			//remove edges that no need; 
+			if ((*it)->max_y==y) {
+				it=acl.erase(it);
+				continue;
+			}
+			//update edges' x
+			//Bresenham’s or mid-point scan line conversion algorithm
+			PPolyEdge e = (*it);
+			if (e->dx==0) {
+				
+			} else if (e->dy>0) {
+				e->counter+=e->dx;
+				while(e->counter>e->dy) {
+					e->x++;
+					e->counter-=e->dy;
+				}
+				if (e->x>e->x2)
+					e->x=e->x2;
+			} else if (e->dy<0) {
+				e->counter-=e->dx;
+				while(e->counter<e->dy){
+					e->x--;
+					e->counter-=e->dy;
+				}
+				if (e->x<e->x1)
+					e->x=e->x1;
+			}
+			it++;
+		}
+		
+		for (int i=0;i+1<intersects.size();i+=2) {
+			//			TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size(),i,intersects[i],intersects[i+1]);
+			doDrawFillLineH(dst,intersects[i],intersects[i+1],y,color);
+		}
+		for (PPolyEdge e:horizontalEdges) {
+			doDrawFillLineH(dst,e->x1,e->x2,y,color);			
+		}
+	}	
+}
+
+void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color) {
+	for (int i=0;i<num_vertice;i++) {
+		ImageDrawLineEx(dst,vertice_x[i],vertice_y[i],
+			vertice_x[(i+1)%num_vertice],vertice_y[(i+1)%num_vertice],
+			lineWidth,
+			color
+			);
+	}	
+}
+
+void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vertice, int lineWidth, Color color) {
+	for (int i=0;i<num_vertice-1;i++) {
+		ImageDrawLineEx(dst,points_x[i],points_y[i],
+			points_x[i+1],points_y[i+1],
+			lineWidth,
+			color
+			);
+	}	
+	
+}
+
+
