@@ -52,6 +52,27 @@ static double d2a(double degree)
 	return degree*M_PI/180.0;
 }
 
+static void captureScreen() {
+	static int count=0;
+	char filename[200];
+	do {
+		sprintf(filename,"save_%04d.png",count);
+		count++;
+	} while(FileExists(filename));
+	Image image = LoadImageFromScreen();
+	ExportImage(image,filename);
+	char msg[200];
+	sprintf(msg,"Saved as %s",filename);
+	ImageDrawText(&image,msg,pWorld->width-10-GetFontDefault().baseSize*strlen(msg)*1.5,
+		pWorld->height-20-GetFontDefault().baseSize*2,20,pTurtle->pen_color);
+	Texture2D texture=LoadTextureFromImage(image);
+	BeginDrawing();
+	DrawTexture(texture,0,0,pWorld->back_color);
+	EndDrawing();
+	UnloadImage(image);
+	sleep(1);
+}
+
 static void displayWorld() {
 	if (WindowShouldClose()) {
 		pWorld->window_should_close = true;
@@ -89,6 +110,9 @@ static void interactWithUser() {
 	} 
 	if (IsKeyPressed(KEY_F3)) {
 		pTurtle->is_show=!pTurtle->is_show; 
+	} 
+	if (IsKeyPressed(KEY_F5)) {
+		captureScreen(); 
 	} 
 }
 static void refreshWorld()
@@ -2585,6 +2609,9 @@ TurtleState getState()
 	state.x=getX();
 	state.y=getY();
 	state.angle=getAngle();
+	state.is_pen_down = pTurtle->is_pen_down;
+	state.pen_color = pTurtle->pen_color;
+	state.pen_size = pTurtle->pen_size;
 	return state;
 }
 
@@ -2596,6 +2623,9 @@ void setState(TurtleState state)
 		return;
 	setXY(state.x,state.y);
 	setAngle(state.angle);
+	pTurtle->is_pen_down = state.is_pen_down;
+	pTurtle->pen_color = state.pen_color;
+	pTurtle->pen_size = state.pen_size;
 }
 
 void faceXY(double x,double y)

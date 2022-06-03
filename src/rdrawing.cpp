@@ -31,20 +31,66 @@ static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int line
 		yi=1;
 	}
 	int D = (2*dy)-dx;
+	int D_delta1=2*(dy-dx);
+	int D_delta2=2*dy;
 	int y=y0;
-	int	w = lineWidth/2.0*dx/sqrt(dx*dx+dy*dy); 
+	float lwv = lineWidth*sqrt(dx*dx+dy*dy)/dx;
+	float b = lineWidth*dy / dx;
+	float end_dx=b*lineWidth/2/lwv;
+	float end_dy=b*b/2/lwv;
+	int end_mid_x0 = x0+end_dy;
+	int end_mid_x1 = x1-end_dy;
+	int	w = round(lwv/2.0);
 	for (int x=x0;x<=x1;x++) {
-		for (int yy=y-w;yy<=y+w;yy++) {
-			ImageDrawPixel(image,
-				x,yy,color);
+		if (x>=end_mid_x0 && x<=end_mid_x1) {
+			for (int yy=y-w;yy<=y+w;yy++) {
+				ImageDrawPixel(image,
+					x,yy,color);
+			}
 		}
 		if (D>0) {
 			y+=yi;
-			D+=2*(dy-dx);
+			D+=D_delta1;
 		}else{
-			D+=2*dy;
+			D+=D_delta2;
 		}
 	}
+	if (yi>0) {
+		int vx[3];
+		int vy[3];
+		vx[0]=end_mid_x0;
+		vy[0]=y0+end_dy-w;
+		vx[1]=end_mid_x0;
+		vy[1]=y0+end_dy+w;
+		vx[2]=x0-end_dx;
+		vy[2]=y0-end_dy+w;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+		vx[0]=end_mid_x1;
+		vy[0]=y1-end_dy-w;
+		vx[1]=end_mid_x1;
+		vy[1]=y1-end_dy+w;
+		vx[2]=x1+end_dx;
+		vy[2]=y1+end_dy-w;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+	} else {
+		int vx[3];
+		int vy[3];
+		vx[0]=end_mid_x0;
+		vy[0]=y0-end_dy-w;
+		vx[1]=end_mid_x0;
+		vy[1]=y0-end_dy+w;
+		vx[2]=x0-end_dx;
+		vy[2]=y0+end_dy-w;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+		vx[0]=end_mid_x1;
+		vy[0]=y1+end_dy-w;
+		vx[1]=end_mid_x1;
+		vy[1]=y1+end_dy+w;
+		vx[2]=x1+end_dx;
+		vy[2]=y1-end_dy+w;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+	}
+
 }
 
 static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
@@ -64,20 +110,68 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 		xi = 1;
 	}
 	int D = (2*dx) - dy;
+	int D_delta1=2*(dx-dy);
+	int D_delta2=2*dx;
+	
 	int x = x0;
-	int	w = lineWidth/2.0*dy/sqrt(dx*dx+dy*dy);
+	float lwh = lineWidth*sqrt(dx*dx+dy*dy)/dy;
+	float b = lineWidth*dx / dy;
+	float end_dy=b*lineWidth/2/lwh;
+	float end_dx=b*b/2/lwh;
+	int end_mid_y0 = y0+end_dy;
+	int end_mid_y1 = y1-end_dy;
+	int	w = round(lwh/2.0);
+
+//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
 	for (int y=y0;y<=y1;y++) {
-		for (int xx=x-w;xx<=x+w;xx++) {
-			ImageDrawPixel(image,
-				xx,y,color);
+		if (y>=end_mid_y0 && y<=end_mid_y1) {
+			for (int xx=x-w;xx<=x+w;xx++) {
+				ImageDrawPixel(image,
+					xx,y,color);
+			}
 		}
 		if (D>0) {
 			x+=xi;
-			D+=2*(dx-dy);
+			D+=D_delta1;
 		}else{
-			D+=2*dx;
+			D+=D_delta2;
 		}
-	}	
+	}
+	if (xi>0) {
+		int vx[3];
+		int vy[3];
+		vx[0]=x0+end_dx-w;
+		vy[0]=end_mid_y0;
+		vx[1]=x0+end_dx+w;
+		vy[1]=end_mid_y0;
+		vx[2]=x0-end_dx+w;
+		vy[2]=y0-end_dy;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+		vx[0]=x1-end_dx-w;
+		vy[0]=end_mid_y1;
+		vx[1]=x1-end_dx+w;
+		vy[1]=end_mid_y1;
+		vx[2]=x1+end_dx-w;
+		vy[2]=y1+end_dy;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+	} else {
+		int vx[3];
+		int vy[3];
+		vx[0]=x0-end_dx-w;
+		vy[0]=end_mid_y0;
+		vx[1]=x0-end_dx+w;
+		vy[1]=end_mid_y0;
+		vx[2]=x0+end_dx-w;
+		vy[2]=y0-end_dy;
+		ImageFillPolygonEx(image,vx,vy,3,color);
+		vx[0]=x1+end_dx-w;
+		vy[0]=end_mid_y1;
+		vx[1]=x1+end_dx+w;
+		vy[1]=end_mid_y1;
+		vx[2]=x1-end_dx+w;
+		vy[2]=y1+end_dy;
+		ImageFillPolygonEx(image,vx,vy,3,color);		
+	}
 } 
 
 void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
@@ -591,7 +685,6 @@ void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vert
 			color
 			);
 	}	
-	
 }
 
 

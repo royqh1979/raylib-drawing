@@ -9,8 +9,8 @@ int main() {
 	//ImageDrawCircleEx(&img, 400,300,200,10,BLACK);
 	SetRandomSeed(time(NULL));
 	SetTraceLogLevel(LOG_WARNING);
-	int vx[20];
-	int vy[20];
+	int vx[200];
+	int vy[200];
 	int size=sizeof(vx)/sizeof(int);
 	//	for (int i=0;i<size;i++) {
 	//		vx[i]=GetRandomValue(0,800);
@@ -25,12 +25,20 @@ int main() {
 				vy[num]=GetMouseY();
 				if (num>0)
 					ImageDrawLine(&img,vx[num-1],vy[num-1],vx[num],vy[num],BLACK);
+				ImageDrawPointEx(&img,vx[num],vy[num],3,BLUE);
 				num++;
 			}
 		}
 		if (IsKeyPressed(KEY_ENTER)) {
 			ImageFillPolygonEx(&img,vx,vy,num,LIGHTRED);
-			ImageDrawPolygonEx(&img,vx,vy,num,1,BLACK);
+			ImageDrawPolygonEx(&img,vx,vy,num,3,BLACK);
+			for (int i=0;i<num;i++) {
+				ImageDrawPointEx(&img,vx[i],vy[i],5,BLUE);				
+			}
+		}
+		if (IsKeyPressed(KEY_C)) {
+			num = 0;
+			ImageClearBackground(&img,WHITE);
 		}
 		Texture2D texture = LoadTextureFromImage(img);
 		BeginDrawing();

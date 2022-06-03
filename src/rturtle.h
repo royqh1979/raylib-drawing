@@ -7,6 +7,7 @@
 /**
  * Press F2 toggle display of grids
  * Press F3 toggle display of the turtle 
+ * Press F5 to capture screen
  */
 
 typedef struct
@@ -14,6 +15,9 @@ typedef struct
 	double x;
 	double y;
 	double angle;
+	bool is_pen_down;
+	Color pen_color;
+	int pen_size;
 } TurtleState;
 
 #if defined(__cplusplus)
