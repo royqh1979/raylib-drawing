@@ -2143,7 +2143,7 @@ void initWorld(int width,int height){
 	pWorld->hide_background_image = true;
 	
 	pTurtle=(Turtle*)malloc(sizeof(Turtle));
-	pTurtle->pen_size = 3;
+	pTurtle->pen_size = 1;
 	pTurtle->pen_color = BLACK;
 	pTurtle->x=pWorld->origin_x;
 	pTurtle->y=pWorld->origin_y;
@@ -2154,8 +2154,7 @@ void initWorld(int width,int height){
 	prepareTurtleOriginIcon();
 	
 	pWorld->world_image = GenImageColor(width,height,BLANK);
-	createGrids(100,20,DARKRED,DARKCYAN);
-	
+	createGrids(100,1,20,DARKRED,DARKCYAN);
 }
 
 void closeWorld(){
@@ -2910,7 +2909,7 @@ void removeGrids() {
 	}
 }
 
-void createGrids(int gridSize,int labelFontSize, Color gridColorX, Color gridColorY) {
+void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridColorX, Color gridColorY) {
 	if (pWorld==NULL)
 		return ;
 	if (pWorld->window_should_close)
@@ -2929,18 +2928,18 @@ void createGrids(int gridSize,int labelFontSize, Color gridColorX, Color gridCol
 	x2=pWorld->origin_x;
 	while (x1>=0 || x2<pWorld->width) {
 		if (x1>=0) {
-			ImageDrawLineEx(&image, x1,0,x1,pWorld->height, pTurtle->pen_size, gridColorX);
+			ImageDrawLineEx(&image, x1,0,x1,pWorld->height, gridLineWidth, gridColorX);
 			sprintf(buffer,"%d",x1-pWorld->origin_x);
 			if (x1< GetFontDefault().baseSize+10) {
-				ImageDrawText(&image, buffer,GetFontDefault().baseSize+10 + pTurtle->pen_size/2+10 ,pTurtle->pen_size/2+10,labelFontSize,gridColorX);				
+				ImageDrawText(&image, buffer,GetFontDefault().baseSize+10 + gridLineWidth/2+10 ,gridLineWidth/2+10,labelFontSize,gridColorX);				
 			} else {
-				ImageDrawText(&image, buffer,x1 + pTurtle->pen_size/2+10 ,pTurtle->pen_size/2+10,labelFontSize,gridColorX);				
+				ImageDrawText(&image, buffer,x1 + gridLineWidth/2+10 ,gridLineWidth/2+10,labelFontSize,gridColorX);				
 			}
 		}
 		if (x2<pWorld->width) {
-			ImageDrawLineEx(&image, x2,0,x2,pWorld->height, pTurtle->pen_size, gridColorX);			
+			ImageDrawLineEx(&image, x2,0,x2,pWorld->height, gridLineWidth, gridColorX);			
 			sprintf(buffer,"%d",x2-pWorld->origin_x);
-			ImageDrawText(&image, buffer, x2 + pTurtle->pen_size/2+10 ,pTurtle->pen_size/2+10,labelFontSize,gridColorX);
+			ImageDrawText(&image, buffer, x2 + gridLineWidth/2+10 ,gridLineWidth/2+10,labelFontSize,gridColorX);
 		}
 		x1-=gridSize;
 		x2+=gridSize;
@@ -2949,18 +2948,18 @@ void createGrids(int gridSize,int labelFontSize, Color gridColorX, Color gridCol
 	y2=pWorld->origin_y;
 	while (y1>=0 || y2<pWorld->height) {
 		if (y1>=0) {
-			ImageDrawLineEx(&image, 0,y1,pWorld->width, y1, pTurtle->pen_size, gridColorY);
+			ImageDrawLineEx(&image, 0,y1,pWorld->width, y1, gridLineWidth, gridColorY);
 			sprintf(buffer,"%d",pWorld->origin_y-y1);
 			if (y1 < GetFontDefault().baseSize+10) {
-				ImageDrawText(&image, buffer,pTurtle->pen_size/2+10 , GetFontDefault().baseSize+10  + pTurtle->pen_size/2+10,labelFontSize,gridColorY);
+				ImageDrawText(&image, buffer, gridLineWidth/2+10 , GetFontDefault().baseSize+10  + gridLineWidth/2+10,labelFontSize,gridColorY);
 			} else {
-				ImageDrawText(&image, buffer,pTurtle->pen_size/2+10 , y1+ pTurtle->pen_size/2+10,labelFontSize,gridColorY);
+				ImageDrawText(&image, buffer, gridLineWidth/2+10 , y1+ gridLineWidth/2+10,labelFontSize,gridColorY);
 			}
 		}
 		if (y2<pWorld->height) {
-			ImageDrawLineEx(&image, 0,y2,pWorld->width, y2, pTurtle->pen_size, gridColorY);			
+			ImageDrawLineEx(&image, 0,y2,pWorld->width, y2, gridLineWidth, gridColorY);			
 			sprintf(buffer,"%d",pWorld->origin_y-y2);
-			ImageDrawText(&image, buffer,pTurtle->pen_size/2+10 , y2+ pTurtle->pen_size/2+10,labelFontSize,gridColorY);
+			ImageDrawText(&image, buffer, gridLineWidth/2+10 , y2+ gridLineWidth/2+10,labelFontSize,gridColorY);
 		}
 		y1-=gridSize;
 		y2+=gridSize;

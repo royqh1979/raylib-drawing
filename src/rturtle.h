@@ -87,7 +87,7 @@ extern "C" {            // Prevents name mangling of functions
 	void setBackgroundColor(Color color);
 	Color getBackgroundColor();
 	
-	void createGrids(int gridSize,int labelFontSize, Color gridColorX, Color gridColorY);
+	void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridColorX, Color gridColorY);
 	void removeGrids();
 	
 	void fill(Color fillColor);
