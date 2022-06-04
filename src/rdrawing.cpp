@@ -64,14 +64,14 @@ static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int line
 		vy[1]=y0+end_dy+w;
 		vx[2]=x0-end_dx;
 		vy[2]=y0-end_dy+w;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 		vx[0]=end_mid_x1;
 		vy[0]=y1-end_dy-w;
 		vx[1]=end_mid_x1;
 		vy[1]=y1-end_dy+w;
 		vx[2]=x1+end_dx;
 		vy[2]=y1+end_dy-w;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 	} else {
 		int vx[3];
 		int vy[3];
@@ -81,16 +81,16 @@ static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int line
 		vy[1]=y0-end_dy+w;
 		vx[2]=x0-end_dx;
 		vy[2]=y0+end_dy-w;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 		vx[0]=end_mid_x1;
 		vy[0]=y1+end_dy-w;
 		vx[1]=end_mid_x1;
 		vy[1]=y1+end_dy+w;
 		vx[2]=x1+end_dx;
 		vy[2]=y1-end_dy+w;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 	}
-
+	
 }
 
 static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
@@ -121,8 +121,8 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 	int end_mid_y0 = y0+end_dy;
 	int end_mid_y1 = y1-end_dy;
 	int	w = round(lwh/2.0);
-
-//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
+	
+	//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
 	for (int y=y0;y<=y1;y++) {
 		if (y>=end_mid_y0 && y<=end_mid_y1) {
 			for (int xx=x-w;xx<=x+w;xx++) {
@@ -146,14 +146,14 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 		vy[1]=end_mid_y0;
 		vx[2]=x0-end_dx+w;
 		vy[2]=y0-end_dy;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 		vx[0]=x1-end_dx-w;
 		vy[0]=end_mid_y1;
 		vx[1]=x1-end_dx+w;
 		vy[1]=end_mid_y1;
 		vx[2]=x1+end_dx-w;
 		vy[2]=y1+end_dy;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 	} else {
 		int vx[3];
 		int vy[3];
@@ -163,14 +163,14 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 		vy[1]=end_mid_y0;
 		vx[2]=x0+end_dx-w;
 		vy[2]=y0-end_dy;
-		ImageFillPolygonEx(image,vx,vy,3,color);
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 		vx[0]=x1+end_dx-w;
 		vy[0]=end_mid_y1;
 		vx[1]=x1+end_dx+w;
 		vy[1]=end_mid_y1;
 		vx[2]=x1-end_dx+w;
 		vy[2]=y1+end_dy;
-		ImageFillPolygonEx(image,vx,vy,3,color);		
+		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
 	}
 } 
 
@@ -525,6 +525,8 @@ struct PolyEdge {
 using PPolyEdge = std::shared_ptr<PolyEdge>;
 
 static void doDrawFillLineH(Image* dst,int x1,int x2, int y,Color color) {
+	if (x1>x2)
+		std::swap(x1,x2);
 	for (int x=x1;x<=x2;x++) {
 		ImageDrawPixel(dst,x,y,color);
 	}
@@ -687,4 +689,122 @@ void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vert
 	}	
 }
 
+void ImageFillTriangleEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int y2, Color fillColor) {
+	int X0,Y0,X1,Y1,X2,Y2;
+	if (y0<=y1) {
+		if (y2<=y0) {
+			X0=x2;
+			Y0=y2;
+			X1=x0;
+			Y1=y0;
+			X2=x1;
+			Y2=y1;
+		} else if (y2<=y1) {
+			X0=x0;
+			Y0=y0;
+			X1=x2;
+			Y1=y2;
+			X2=x1;
+			Y2=y1;
+		} else {
+			X0=x0;
+			Y0=y0;
+			X1=x1;
+			Y1=y1;
+			X2=x2;
+			Y2=y2;
+		} 
+	} else {
+		if (y2<=y1) {
+			X0=x2;
+			Y0=y2;
+			X1=x1;
+			Y1=y1;
+			X2=x0;
+			Y2=y0;			
+		} else if (y2<=y0) {
+			X0=x1;
+			Y0=y1;
+			X1=x2;
+			Y1=y2;
+			X2=x0;
+			Y2=y0;			
+		} else {
+			X0=x1;
+			Y0=y1;
+			X1=x0;
+			Y1=y0;
+			X2=x2;
+			Y2=y2;						
+		}
+	}
+	x0=X0;
+	y0=Y0;
+	x1=X1;
+	y1=Y1;
+	x2=X2;
+	y2=Y2;
+	
+	//upper triangle
+	int dy0 = y2-y0;
+	int dx0 = x2-x0;
+	int xi0;
+	if (dx0<0) {
+		xi0=-1;
+		dx0=-dx0;
+	} else {
+		xi0=1;
+	}
+	int C0=0;
+	int dy1 = y2-y1;	
+	int dx1 = x2-x1;
+	int xi1;
+	if (dx1<0) {
+		xi1=-1;
+		dx1=-dx1;
+	} else {
+		xi1=1;
+	}
+	int C1=0;
+	int dy2 = y1-y0;	
+	int dx2 = x1-x0;
+	int xi2;
+	if (dx2<0) {
+		xi2=-1;
+		dx2=-dx2;
+	} else {
+		xi2=1;
+	}
+	int C2=0;
+	int xx0,xx1,xx2;
+	xx0=x0;
+	xx2=x0;
+	for (int y=y0;y<y1;y++) {
+		doDrawFillLineH(dst,xx0,xx2,y,fillColor);
+		C0+=dx0;
+		while (C0>=dy0) {
+			xx0+=xi0;
+			C0-=dy0;
+		}
+		C2+=dx2;
+		while (C2>=dy2) {
+			xx2+=xi2;
+			C2-=dy2;
+		}
+	}
+	xx1=x1;
+	for (int y=y1;y<y2;y++) {
+		doDrawFillLineH(dst,xx0,xx1,y,fillColor);
+		C0+=dx0;
+		while (C0>=dy0) {
+			xx0+=xi0;
+			C0-=dy0;
+		}
+		C1+=dx1;
+		while (C1>=dy1) {
+			xx1+=xi1;
+			C1-=dy1;
+		}
+	}
+}
 
