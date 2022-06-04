@@ -1,4 +1,5 @@
 #include "rturtle.h"
+#include "string.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -2174,7 +2175,7 @@ void closeWorld(){
 	free(pTurtle);
 }
 
-void pause() {
+void waitClick() {
 	if (pWorld==NULL)
 		return;
 	while(!pWorld->window_should_close) {

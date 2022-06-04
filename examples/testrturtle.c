@@ -26,10 +26,10 @@ int main() {
 	fillToBorder(getPenColor(),SEAGREEN);
 	setState(ts);
 	pd();
-    pause();
+    waitClick();
 	clearScreen();
     hide();
-    pause();
+    waitClick();
     return 0;
 }
 

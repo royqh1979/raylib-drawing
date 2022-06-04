@@ -39,7 +39,8 @@ extern "C" {            // Prevents name mangling of functions
 	void clearScreen();
 	void home();
 	
-	void pause();
+	//pause() is defined in linux (unistd.h)
+	void waitClick();
 	
 	void pd();
 	void pu();
