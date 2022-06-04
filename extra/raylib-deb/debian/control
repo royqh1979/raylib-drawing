@@ -1,0 +1,17 @@
+Source: raylib
+Section: devel
+Priority: optional
+Maintainer: royqh1979@gmail.com
+Build-Depends: debhelper (>= 12~)
+Standards-Version: 4.3.0
+Homepage: https://github.com/royqh1979/raylib-drawing
+
+Package: raylib
+Architecture: any
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 libgl-dev,
+	 libx11-dev
+Description: A simple and easy-to-use library to enjoy videogames programming
+	raylib is highly inspired by Borland BGI graphics lib and by XNA framework.
+	NOTE for ADVENTURERS: raylib is a programming library to enjoy videogames programming; no fancy interface, no visual helpers, no auto-debugging... just coding in pure spartan-programmers way. Are you ready to learn?
