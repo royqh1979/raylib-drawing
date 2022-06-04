@@ -1,0 +1,17 @@
+Source: raylib-drawing
+Section: devel
+Priority: optional
+Maintainer: royqh1979@gmail.com
+Build-Depends: debhelper (>= 12~),
+	raylib
+Standards-Version: 4.3.0
+Homepage: https://github.com/royqh1979/raylib-drawing
+
+Package: raylib-drawing
+Architecture: any
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 raylib
+Description: A raylib extension for 2d drawing
+	raylib-drawing is a 2d drawing library based on raylib
+ 
