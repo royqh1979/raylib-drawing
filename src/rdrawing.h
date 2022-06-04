@@ -133,11 +133,19 @@ extern "C" {            // Prevents name mangling of functions
 	void ImageDrawCircleEx(Image* dst, int cx, int cy, int radius, int lineWidth, Color color);
 	void ImageFillEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, Color fillColor);
 	void ImageFillCircleEx(Image* dst, int cx, int cy, int radius, Color fillColor);
+	
 	void ImageFloodFill(Image* dst,int x, int y, Color borderColor, Color fillColor);
+
 	void ImageFillPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, Color fillColor);
 	void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color);
 	void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vertice, int lineWidth, Color color);
+
 	void ImageFillTriangleEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int y2, Color fillColor);
+	void ImageFillRectangleEx(Image* dst, int left, int top, int width, int height, Color fillColor);
+	void ImageDrawRectangleEx(Image* dst, int left, int top, int width, int height, int borderWidth, Color color);
+	
+	void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, Color fillColor);
+	void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, int borderWidth, Color color);
 	
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions

@@ -40,7 +40,7 @@ static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int line
 	float end_dy=b*b/2/lwv;
 	int end_mid_x0 = x0+end_dy;
 	int end_mid_x1 = x1-end_dy;
-	int	w = round(lwv/2.0);
+	int	w = lwv/2.0;
 	for (int x=x0;x<=x1;x++) {
 		if (x>=end_mid_x0 && x<=end_mid_x1) {
 			for (int yy=y-w;yy<=y+w;yy++) {
@@ -120,7 +120,7 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 	float end_dx=b*b/2/lwh;
 	int end_mid_y0 = y0+end_dy;
 	int end_mid_y1 = y1-end_dy;
-	int	w = round(lwh/2.0);
+	int	w = lwh/2.0;
 	
 	//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
 	for (int y=y0;y<=y1;y++) {
@@ -532,6 +532,14 @@ static void doDrawFillLineH(Image* dst,int x1,int x2, int y,Color color) {
 	}
 }
 
+static void doDrawFillLineV(Image* dst,int x,int y1, int y2,Color color) {
+	if (y1>y2)
+		std::swap(y1,y2);
+	for (int y=y1;y<=y2;y++) {
+		ImageDrawPixel(dst,x,y,color);
+	}
+}
+
 static bool sortPolyEdgeByx(PPolyEdge e1,PPolyEdge e2) {
 	return e1->x<e2->x;
 }
@@ -807,4 +815,212 @@ void ImageFillTriangleEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int
 		}
 	}
 }
+
+void ImageFillRectangleEx(Image* dst, int left, int top, int width, int height, Color fillColor) {
+	int right = left+width;
+	int bottom = top+height;
+	if (left>right) 
+		std::swap(left,right);
+	if (top>bottom)
+		std::swap(top,bottom);
+	for (int y=top;y<=bottom;y++) {
+		doDrawFillLineH(dst,left,right,y,fillColor);
+	}	
+}
+void ImageDrawRectangleEx(Image* dst, int left, int top, int width, int height, int borderWidth, Color color) {
+	int right = left+width;
+	int bottom = top+height;
+	if (left>right) 
+		std::swap(left,right);
+	if (top>bottom)
+		std::swap(top,bottom);
+	ImageDrawLineEx(dst,left,top,right,top,borderWidth,color);
+	ImageDrawLineEx(dst,right,top,right,bottom,borderWidth,color);
+	ImageDrawLineEx(dst,left,bottom,right,bottom,borderWidth,color);
+	ImageDrawLineEx(dst,left,top,left,bottom,borderWidth,color);
+}
+
+void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry,  Color fillColor) {
+	int right = left+width;
+	int bottom = top+height;
+	if (left>right) 
+		std::swap(left,right);
+	if (top>bottom)
+		std::swap(top,bottom);
+	rx=std::min(rx,(right-left)/2);
+	ry=std::min(ry,(bottom-top)/2);
+	int x0=left;
+	int x1=left+rx;
+	int x2=right-rx;
+	int x3=right;
+	int y0=top;
+	int y1=top+ry;
+	int y2=bottom-ry;
+	int y3=bottom;
+	int twoASquare=2*rx*rx;
+	int twoBSquare=2*ry*ry;
+	int x=rx;
+	int y=0;
+	int XChange = ry*ry*(1-2*rx);
+	int YChange = rx*rx;
+	int ellipseError = 0;
+	int stoppingX = twoBSquare*rx;
+	int stoppingY = 0;
+	//first stage, y'>-1
+	while (stoppingX>=stoppingY) {
+		doDrawFillLineH(dst,x1-x,x2+x,y1-y,fillColor);
+		doDrawFillLineH(dst,x1-x,x2+x,y2+y,fillColor);
+		y+=1;
+		stoppingY += twoASquare;
+		ellipseError += YChange;
+		YChange += twoASquare;
+		if ((2*ellipseError+XChange)>0){
+			x-=1;
+			stoppingX -= twoBSquare;
+			ellipseError += XChange;
+			XChange+=twoBSquare;
+		}
+	}
+	//second stage, y'<-1
+	x=0;
+	y=ry;
+	XChange = ry * ry;
+	YChange = rx * rx * (1-2*ry);
+	ellipseError = 0;
+	stoppingX = 0;
+	stoppingY = twoASquare*ry;
+	while (stoppingX<=stoppingY) {
+		x++;
+		stoppingX+=twoBSquare;
+		ellipseError += XChange;
+		XChange+=twoBSquare;
+		if ((2*ellipseError+YChange)>0) {
+			doDrawFillLineH(dst,x1-x,x2+x,y1-y,fillColor);
+			doDrawFillLineH(dst,x1-x,x2+x,y2+y,fillColor);
+			y-=1;
+			stoppingY-=twoASquare;
+			ellipseError+=YChange;
+			YChange+=twoASquare;
+		}				
+	}	
+	for (int y=y1;y<=y2;y++) {
+		doDrawFillLineH(dst,left,right,y,fillColor);
+	}	
+	
+}
+
+void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, int borderWidth, Color color) {
+	int right = left+width;
+	int bottom = top+height;
+	if (left>right) 
+		std::swap(left,right);
+	if (top>bottom)
+		std::swap(top,bottom);
+	rx=std::min(rx,(right-left)/2);
+	ry=std::min(ry,(bottom-top)/2);
+	int bx0=left;
+	int bx1=left+rx;
+	int bx2=right-rx;
+	int bx3=right;
+	int by0=top;
+	int by1=top+ry;
+	int by2=bottom-ry;
+	int by3=bottom;
+	int radiusX1=rx-borderWidth/2;
+	int radiusX2=rx+borderWidth/2;
+	int radiusY1=ry-borderWidth/2;
+	int radiusY2=ry+borderWidth/2;
+	int twoASquare1=2*radiusX1*radiusX1;
+	int twoBSquare1=2*radiusY1*radiusY1;
+	int twoASquare2=2*radiusX2*radiusX2;
+	int twoBSquare2=2*radiusY2*radiusY2;
+	int x1=radiusX1;
+	int x2=radiusX2;
+	int y=0;	
+	int XChange1 = radiusY1*radiusY1*(1-2*radiusX1);
+	int YChange1 = radiusX1*radiusX1;
+	int ellipseError1 = 0;
+	int stoppingX1 = twoBSquare1*radiusX1;
+	int stoppingY1 = 0;
+	int XChange2 = radiusY2*radiusY2*(1-2*radiusX2);
+	int YChange2 = radiusX2*radiusX2;
+	int ellipseError2 = 0;
+	int stoppingX2 = twoBSquare2*radiusX2;
+	int stoppingY2 = 0;
+	
+	//first stage, y'>-1
+	while (stoppingX2>=stoppingY2) {
+		doDrawFillLineH(dst,bx1-x2,bx1-x1,by1-y,color);
+		doDrawFillLineH(dst,bx2+x1,bx2+x2,by1-y,color);
+		doDrawFillLineH(dst,bx1-x2,bx1-x1,by2+y,color);
+		doDrawFillLineH(dst,bx2+x1,bx2+x2,by2+y,color);
+		y+=1;
+		if (stoppingX1>=stoppingY1) {
+			stoppingY1 += twoASquare1;
+			ellipseError1 += YChange1;
+			YChange1 += twoASquare1;
+			if ((2*ellipseError1+XChange1)>0){
+				x1-=1;
+				stoppingX1 -= twoBSquare1;
+				ellipseError1 += XChange1;
+				XChange1+=twoBSquare1;
+			}
+		}
+		stoppingY2 += twoASquare2;
+		ellipseError2 += YChange2;
+		YChange2 += twoASquare2;
+		if ((2*ellipseError2+XChange2)>0){
+			x2-=1;
+			stoppingX2 -= twoBSquare2;
+			ellipseError2 += XChange2;
+			XChange2+=twoBSquare2;
+		}
+	}
+	//second stage, y'<-1
+	int x=0;
+	int y1=radiusY1;
+	int y2=radiusY2;
+	XChange1 = radiusY1 * radiusY1;
+	YChange1 = radiusX1 * radiusX1 * (1-2*radiusY1);
+	ellipseError1 = 0;
+	stoppingX1 = 0;
+	stoppingY1 = twoASquare1*radiusY1;
+	XChange2 = radiusY2 * radiusY2;
+	YChange2 = radiusX2 * radiusX2 * (1-2*radiusY2);
+	ellipseError2 = 0;
+	stoppingX2 = 0;
+	stoppingY2 = twoASquare2*radiusY2;
+	while (stoppingX2<=stoppingY2) {
+		doDrawFillLineV(dst,bx1-x,by1-y1,by1-y2,color);
+		doDrawFillLineV(dst,bx1-x,by2+y1,by2+y2,color);
+		doDrawFillLineV(dst,bx2+x,by1-y1,by1-y2,color);
+		doDrawFillLineV(dst,bx2+x,by2+y1,by2+y2,color);
+		x++;
+		if (stoppingX1<=stoppingY1) {
+			stoppingX1+=twoBSquare1;
+			ellipseError1 += XChange1;
+			XChange1+=twoBSquare1;
+			if ((2*ellipseError1+YChange1)>0) {
+				y1-=1;
+				stoppingY1-=twoASquare1;
+				ellipseError1+=YChange1;
+				YChange1+=twoASquare1;
+			}							
+		}
+		stoppingX2+=twoBSquare2;
+		ellipseError2 += XChange2;
+		XChange2+=twoBSquare2;
+		if ((2*ellipseError2+YChange2)>0) {
+			y2-=1;
+			stoppingY2-=twoASquare2;
+			ellipseError2+=YChange2;
+			YChange2+=twoASquare2;
+		}				
+	}	
+	ImageDrawLineEx(dst,bx1,by0,bx2,by0,borderWidth,color);
+	ImageDrawLineEx(dst,bx1,by3,bx2,by3,borderWidth,color);
+	ImageDrawLineEx(dst,bx0,by1,bx0,by2,borderWidth,color);
+	ImageDrawLineEx(dst,bx3,by1,bx3,by2,borderWidth,color);
+}
+
 
