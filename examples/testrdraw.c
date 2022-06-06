@@ -14,21 +14,31 @@ void genLine(Image* img) {
 }
 
 int main() {
-	InitWindow(800,600,"test");
+	InitWindow(650,650,"test");
 	
 	SetTraceLogLevel(LOG_WARNING);
 	
-	Image img=GenImageColor(800,600,WHITE);
+	Image img=GenImageColor(650,650,WHITE);
 	
 	SetRandomSeed(time(NULL));
 
-	genLine(&img);
+	for (int i=0;i<=12;i++) {
+		for (int j=0;j<=12;j++) {
+			ImageFillSectorEx(&img,i*50+25,j*50+25,24,i*PI/6,j*PI/6,DARKCYAN);
+			ImageDrawLine(&img,i*50+25,j*50+25,i*50+50,j*50+25,BLACK);
+		}
+	}
+
+//	ImageFillSectorEx(&img,300,300,200,PI/3,PI/6,DARKCYAN);
+//	ImageFillEllipseEx(&img,400,300,250,50,DARKRED);
+
+	//genLine(&img);
 	SetTargetFPS(120);
 	int num=0;
 	while (!WindowShouldClose()) {
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-			genLine(&img);
-		}
+//		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+//			genLine(&img);
+//		}
 		Texture2D texture = LoadTextureFromImage(img);
 		BeginDrawing();
 		DrawTexture(texture,0,0,WHITE);
