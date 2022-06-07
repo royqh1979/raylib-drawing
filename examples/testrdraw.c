@@ -14,18 +14,18 @@ void genLine(Image* img) {
 }
 
 int main() {
-	InitWindow(650,650,"test");
+	InitWindow(1300,650,"test");
 	
 	SetTraceLogLevel(LOG_WARNING);
 	
-	Image img=GenImageColor(650,650,WHITE);
+	Image img=GenImageColor(1300,650,WHITE);
 	
 	SetRandomSeed(time(NULL));
 
 	for (int i=0;i<=12;i++) {
 		for (int j=0;j<=12;j++) {
-			ImageFillSectorEx(&img,i*50+25,j*50+25,24,i*PI/6,j*PI/6,DARKCYAN);
-			ImageDrawLine(&img,i*50+25,j*50+25,i*50+50,j*50+25,BLACK);
+			ImageFillSectorEx(&img,j*50+25,i*50+25,24,16,i*PI/6,j*PI/6,DARKCYAN);
+			ImageFillSectorEx(&img,650+j*50+25,i*50+25,24,16,i*PI/6,-j*PI/6,DARKCYAN);
 		}
 	}
 

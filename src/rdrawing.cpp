@@ -1037,26 +1037,29 @@ static float normalizedAngle(float angle) {
 }
 
 // sector (beginAngle < endAngle) between 0 to PI
-static void doFillSector1(Image* dst, int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor ) {
-	if (beginAngle>=endAngle)
-		return;
+static void doFillSector1(Image* dst, int cx, int cy, int radiusX, int radiusY, float beginAngle, float endAngle, Color fillColor ) {
 	//arc
-	int twoSquare=2*radius*radius;
-	int xa=radius;
+	int twoASquare=2*radiusX*radiusX;
+	int twoBSquare=2*radiusY*radiusY;
+	int xa=radiusX;
 	int ya=0;
-	int XChange = radius*radius*(1-2*radius);
-	int YChange = radius*radius;
+	int XChange = radiusY*radiusY*(1-2*radiusX);
+	int YChange = radiusX*radiusX;
 	int ellipseError = 0;
-	int stoppingX = twoSquare*radius;
+	int stoppingX = twoBSquare*radiusX;
 	int stoppingY = 0;
-	TraceLog(LOG_WARNING,"Sector1:%f %f",beginAngle,endAngle);
+	//	TraceLog(LOG_WARNING,"Sector1:%f %f",beginAngle,endAngle);
 	//radius
 	int x0=0;
 	int y0=0;
-	int x1=round(radius*cos(beginAngle));
-	int y1=round(radius*sin(beginAngle));
-	int x2=round(radius*cos(endAngle));
-	int y2=round(radius*sin(endAngle));
+	float a = radiusX;
+	float b = radiusY;
+	float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+	int x1=round(r1*cos(beginAngle));
+	int y1=round(r1*sin(beginAngle));
+	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+	int x2=round(r2*cos(endAngle));
+	int y2=round(r2*sin(endAngle));
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
@@ -1076,152 +1079,7 @@ static void doFillSector1(Image* dst, int cx, int cy, int radius, float beginAng
 	} else {
 		xi1=1;
 	}
-	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
-	int C1=0;
-	int xx0,xx1;
-	xx0=x0;
-	xx1=x0;
-	if (dy0==0) 
-		xx0=x2;
-	if (dy1==0)
-		xx1=x1;
-	//first stage, y'>-1
-	while (stoppingX>=stoppingY) {
-		int tx0,tx1;
-		if (-xa<xx0)
-			tx0=xx0;
-		else
-			tx0=-xa;
-		if (xa>xx1)
-			tx1=xx1;
-		else
-			tx1=xa;
-		if (tx0<tx1)
-			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);
-//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
-		ya+=1;
-		stoppingY += twoSquare;
-		ellipseError += YChange;
-		YChange += twoSquare;
-		if ((2*ellipseError+XChange)>0){
-			xa-=1;
-			stoppingX -= twoSquare;
-			ellipseError += XChange;
-			XChange+=twoSquare;
-		}
-		if (ya<=y2 && dy0!=0) {
-			C0+=dx0;
-			while (C0>=dy0) {
-				xx0+=xi0;
-				C0-=dy0;
-			}
-		}
-		if (ya<=y1 && dy1!=0) {
-			C1+=dx1;
-			while (C1>=dy1) {
-				xx1+=xi1;
-				C1-=dy1;
-			}
-		}
-	}	
-	//second stage, y'<-1
-	xa=0;
-	ya=radius;
-	XChange = radius * radius;
-	YChange = radius * radius * (1-2*radius);
-	ellipseError = 0;
-	stoppingX = 0;
-	stoppingY = twoSquare*radius;
-	bool bothSide = (xi0<0 && xi1<0) || (xi0>0 && xi1>0) ;
-	xx0=x2;
-	xx1=x1;
-	while (stoppingX<=stoppingY) {
-		xa++;
-		stoppingX+=twoSquare;
-		ellipseError += XChange;
-		XChange+=twoSquare;
-		if ((2*ellipseError+YChange)>0) {
-			int tx0,tx1;
-			if (-xa<xx0)
-				tx0=xx0;
-			else
-				tx0=-xa;
-			if (xa>xx1)
-				tx1=xx1;
-			else
-				tx1=xa;
-			if (! (bothSide && (ya>y2 && ya>y1))) {
-//				if (tx0<tx1)
-					doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);	
-//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
-			}			
-			ya-=1;
-			stoppingY-=twoSquare;
-			ellipseError+=YChange;
-			YChange+=twoSquare;
-			if (ya<=y2 && dy0!=0) {
-				C0+=dx0;
-				while (C0>=dy0) {
-					xx0-=xi0;
-					C0-=dy0;
-				}				
-			}
-			if (ya<=y1 && dy1!=0) {
-				C1+=dx1;
-				while (C1>=dy1) {
-					xx1-=xi1;
-					C1-=dy1;
-				}				
-			}			
-		}				
-	}
-}
-
-// sector (beginAngle < endAngle) between PI to 2PI
-static void doFillSector2(Image* dst, int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor ) {
-	if (beginAngle>=endAngle)
-		return;
-	//arc
-	int twoSquare=2*radius*radius;
-	int xa=radius;
-	int ya=0;
-	int XChange = radius*radius*(1-2*radius);
-	int YChange = radius*radius;
-	int ellipseError = 0;
-	int stoppingX = twoSquare*radius;
-	int stoppingY = 0;
-	float temp1 = 2*PI-endAngle;
-	float temp2 = 2*PI-beginAngle;
-	beginAngle = temp1;
-	endAngle = temp2;
-	TraceLog(LOG_WARNING,"Sector2:%f %f",beginAngle,endAngle);
-	//radius
-	int x0=0;
-	int y0=0;
-	int x1=round(radius*cos(beginAngle));
-	int y1=round(radius*sin(beginAngle));
-	int x2=round(radius*cos(endAngle));
-	int y2=round(radius*sin(endAngle));
-	int dy0 = y2-y0;
-	int dx0 = x2-x0;
-	int xi0;
-	if (dx0<0) {
-		xi0=-1;
-		dx0=-dx0;
-	} else {
-		xi0=1;
-	}
-	int C0=0;
-	int dy1 = y1-y0;	
-	int dx1 = x1-x0;
-	int xi1;
-	if (dx1<0) {
-		xi1=-1;
-		dx1=-dx1;
-	} else {
-		xi1=1;
-	}
-	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
+	//	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
 	int C1=0;
 	int xx0,xx1;
 	xx0=x0;
@@ -1243,16 +1101,16 @@ static void doFillSector2(Image* dst, int cx, int cy, int radius, float beginAng
 			tx1=xa;
 		if (tx0<tx1)
 			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);
-//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
+		//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
 		ya+=1;
-		stoppingY += twoSquare;
+		stoppingY += twoASquare;
 		ellipseError += YChange;
-		YChange += twoSquare;
+		YChange += twoASquare;
 		if ((2*ellipseError+XChange)>0){
 			xa-=1;
-			stoppingX -= twoSquare;
+			stoppingX -= twoBSquare;
 			ellipseError += XChange;
-			XChange+=twoSquare;
+			XChange+=twoBSquare;
 		}
 		if (ya<=y2 && dy0!=0) {
 			C0+=dx0;
@@ -1271,20 +1129,20 @@ static void doFillSector2(Image* dst, int cx, int cy, int radius, float beginAng
 	}	
 	//second stage, y'<-1
 	xa=0;
-	ya=radius;
-	XChange = radius * radius;
-	YChange = radius * radius * (1-2*radius);
+	ya=radiusY;
+	XChange = radiusY * radiusY;
+	YChange = radiusX * radiusX * (1-2*radiusY);
 	ellipseError = 0;
 	stoppingX = 0;
-	stoppingY = twoSquare*radius;
+	stoppingY = twoASquare*radiusY;
 	bool bothSide = (xi0<0 && xi1<0) || (xi0>0 && xi1>0) ;
 	xx0=x2;
 	xx1=x1;
 	while (stoppingX<=stoppingY) {
 		xa++;
-		stoppingX+=twoSquare;
+		stoppingX+=twoBSquare;
 		ellipseError += XChange;
-		XChange+=twoSquare;
+		XChange+=twoBSquare;
 		if ((2*ellipseError+YChange)>0) {
 			int tx0,tx1;
 			if (-xa<xx0)
@@ -1296,14 +1154,14 @@ static void doFillSector2(Image* dst, int cx, int cy, int radius, float beginAng
 			else
 				tx1=xa;
 			if (! (bothSide && (ya>y2 && ya>y1))) {
-//				if (tx0<tx1)
-					doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);	
-//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
+				//				if (tx0<tx1)
+				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);	
+				//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
 			}			
 			ya-=1;
-			stoppingY-=twoSquare;
+			stoppingY-=twoASquare;
 			ellipseError+=YChange;
-			YChange+=twoSquare;
+			YChange+=twoASquare;
 			if (ya<=y2 && dy0!=0) {
 				C0+=dx0;
 				while (C0>=dy0) {
@@ -1322,38 +1180,730 @@ static void doFillSector2(Image* dst, int cx, int cy, int radius, float beginAng
 	}
 }
 
-
-void ImageFillArcEx(Image* dst,int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor) {
-	beginAngle=normalizedAngle(beginAngle);
-	endAngle=normalizedAngle(endAngle);
-	//	if (beginAngle<endAngle) {
-	//		if (beginAngle
-	//	}
+// sector (beginAngle < endAngle) between PI to 2PI
+static void doFillSector2(Image* dst, int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, Color fillColor ) {
+	//arc
+	int twoASquare=2*radiusX*radiusX;
+	int twoBSquare=2*radiusY*radiusY;
+	int xa=radiusX;
+	int ya=0;
+	int XChange = radiusY*radiusY*(1-2*radiusX);
+	int YChange = radiusX*radiusX;
+	int ellipseError = 0;
+	int stoppingX = twoBSquare*radiusX;
+	int stoppingY = 0;
+	float temp1 = 2*PI-endAngle;
+	float temp2 = 2*PI-beginAngle;
+	beginAngle = temp1;
+	endAngle = temp2;
+	//	TraceLog(LOG_WARNING,"Sector2:%f %f",beginAngle,endAngle);
+	//radius
+	int x0=0;
+	int y0=0;
+	float a = radiusX;
+	float b = radiusY;
+	float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+	int x1=round(r1*cos(beginAngle));
+	int y1=round(r1*sin(beginAngle));
+	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+	int x2=round(r2*cos(endAngle));
+	int y2=round(r2*sin(endAngle));
+	int dy0 = y2-y0;
+	int dx0 = x2-x0;
+	int xi0;
+	if (dx0<0) {
+		xi0=-1;
+		dx0=-dx0;
+	} else {
+		xi0=1;
+	}
+	int C0=0;
+	int dy1 = y1-y0;	
+	int dx1 = x1-x0;
+	int xi1;
+	if (dx1<0) {
+		xi1=-1;
+		dx1=-dx1;
+	} else {
+		xi1=1;
+	}
+	//	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
+	int C1=0;
+	int xx0,xx1;
+	xx0=x0;
+	xx1=x0;
+	if (dy0==0) 
+		xx0=x2;
+	if (dy1==0)
+		xx1=x1;
+	//first stage, y'>-1
+	while (stoppingX>=stoppingY) {
+		int tx0,tx1;
+		if (-xa<xx0)
+			tx0=xx0;
+		else
+			tx0=-xa;
+		if (xa>xx1)
+			tx1=xx1;
+		else
+			tx1=xa;
+		if (tx0<tx1)
+			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);
+		//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
+		ya+=1;
+		stoppingY += twoASquare;
+		ellipseError += YChange;
+		YChange += twoASquare;
+		if ((2*ellipseError+XChange)>0){
+			xa-=1;
+			stoppingX -= twoBSquare;
+			ellipseError += XChange;
+			XChange+=twoBSquare;
+		}
+		if (ya<=y2 && dy0!=0) {
+			C0+=dx0;
+			while (C0>=dy0) {
+				xx0+=xi0;
+				C0-=dy0;
+			}
+		}
+		if (ya<=y1 && dy1!=0) {
+			C1+=dx1;
+			while (C1>=dy1) {
+				xx1+=xi1;
+				C1-=dy1;
+			}
+		}
+	}	
+	//second stage, y'<-1
+	xa=0;
+	ya=radiusY;
+	XChange = radiusY * radiusY;
+	YChange = radiusX * radiusX * (1-2*radiusY);
+	ellipseError = 0;
+	stoppingX = 0;
+	stoppingY = twoASquare*radiusY;
+	bool bothSide = (xi0<0 && xi1<0) || (xi0>0 && xi1>0) ;
+	xx0=x2;
+	xx1=x1;
+	while (stoppingX<=stoppingY) {
+		xa++;
+		stoppingX+=twoBSquare;
+		ellipseError += XChange;
+		XChange+=twoBSquare;
+		if ((2*ellipseError+YChange)>0) {
+			int tx0,tx1;
+			if (-xa<xx0)
+				tx0=xx0;
+			else
+				tx0=-xa;
+			if (xa>xx1)
+				tx1=xx1;
+			else
+				tx1=xa;
+			if (! (bothSide && (ya>y2 && ya>y1))) {
+				//				if (tx0<tx1)
+				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);	
+				//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
+			}			
+			ya-=1;
+			stoppingY-=twoASquare;
+			ellipseError+=YChange;
+			YChange+=twoASquare;
+			if (ya<=y2 && dy0!=0) {
+				C0+=dx0;
+				while (C0>=dy0) {
+					xx0-=xi0;
+					C0-=dy0;
+				}				
+			}
+			if (ya<=y1 && dy1!=0) {
+				C1+=dx1;
+				while (C1>=dy1) {
+					xx1-=xi1;
+					C1-=dy1;
+				}				
+			}			
+		}				
+	}
 }
-void ImageFillSectorEx(Image* dst,int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor) {
-	beginAngle=normalizedAngle(beginAngle);
-	endAngle=normalizedAngle(endAngle);
+
+void ImageFillSectorEx(Image* dst,int cx, int cy, int radiusX, int radiusY, float beginAngle, float endAngle, Color fillColor) {
+	float totalAngle=endAngle-beginAngle;
+	if (totalAngle>=2*PI) {
+		ImageFillEllipseEx(dst,cx,cy,radiusX, radiusY,fillColor);
+		return;
+	}
+	if (totalAngle>0) {
+		beginAngle=normalizedAngle(beginAngle);
+		endAngle=normalizedAngle(beginAngle+totalAngle);
+	} else {
+		beginAngle=normalizedAngle(endAngle);
+		endAngle=normalizedAngle(beginAngle-totalAngle);
+	}
 	if (endAngle>=beginAngle) {
 		if (endAngle<=PI) {
-			doFillSector1(dst,cx,cy,radius,beginAngle,endAngle,fillColor);
+			doFillSector1(dst,cx,cy,radiusX,radiusY, beginAngle,endAngle,fillColor);
 		} else if (beginAngle>=PI) {
-			doFillSector2(dst,cx,cy,radius,beginAngle,endAngle,fillColor);			
+			doFillSector2(dst,cx,cy,radiusX,radiusY, beginAngle,endAngle,fillColor);			
 		} else {
-			doFillSector1(dst,cx,cy,radius,beginAngle,PI,fillColor);						
-			doFillSector2(dst,cx,cy,radius,PI,endAngle,fillColor);						
+			doFillSector1(dst,cx,cy,radiusX,radiusY,beginAngle,PI,fillColor);						
+			doFillSector2(dst,cx,cy,radiusX,radiusY,PI,endAngle,fillColor);						
 		}
 	} else {
 		if (beginAngle<=PI) {
-			doFillSector1(dst,cx,cy,radius,beginAngle,PI,fillColor);						
-			doFillSector1(dst,cx,cy,radius,0,endAngle,fillColor);						
-			doFillSector2(dst,cx,cy,radius,PI,2*PI,fillColor);						
+			doFillSector1(dst,cx,cy,radiusX,radiusY,beginAngle,PI,fillColor);						
+			doFillSector1(dst,cx,cy,radiusX,radiusY,0,endAngle,fillColor);						
+			doFillSector2(dst,cx,cy,radiusX,radiusY,PI,2*PI,fillColor);						
 		} else if (endAngle<=PI){
-			doFillSector1(dst,cx,cy,radius,0,endAngle,fillColor);									
-			doFillSector2(dst,cx,cy,radius,beginAngle,2*PI,fillColor);									
+			doFillSector1(dst,cx,cy,radiusX,radiusY,0,endAngle,fillColor);									
+			doFillSector2(dst,cx,cy,radiusX,radiusY,beginAngle,2*PI,fillColor);									
 		} else {
-			doFillSector1(dst,cx,cy,radius,0,PI,fillColor);									
-			doFillSector2(dst,cx,cy,radius,beginAngle,2*PI,fillColor);									
-			doFillSector2(dst,cx,cy,radius,PI,endAngle,fillColor);
+			doFillSector1(dst,cx,cy,radiusX,radiusY,0,PI,fillColor);									
+			doFillSector2(dst,cx,cy,radiusX,radiusY,beginAngle,2*PI,fillColor);									
+			doFillSector2(dst,cx,cy,radiusX,radiusY,PI,endAngle,fillColor);
+		}
+	}
+}
+
+static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
+	int radiusX1=radiusX-lineWidth/2;
+	int radiusX2=radiusX+lineWidth/2;
+	int radiusY1=radiusY-lineWidth/2;
+	int radiusY2=radiusY+lineWidth/2;
+	int twoASquare1=2*radiusX1*radiusX1;
+	int twoBSquare1=2*radiusY1*radiusY1;
+	int twoASquare2=2*radiusX2*radiusX2;
+	int twoBSquare2=2*radiusY2*radiusY2;
+	int xa1=radiusX1;
+	int xa2=radiusX2;
+	int ya=0;	
+	int XChange1 = radiusY1*radiusY1*(1-2*radiusX1);
+	int YChange1 = radiusX1*radiusX1;
+	int ellipseError1 = 0;
+	int stoppingX1 = twoBSquare1*radiusX1;
+	int stoppingY1 = 0;
+	int XChange2 = radiusY2*radiusY2*(1-2*radiusX2);
+	int YChange2 = radiusX2*radiusX2;
+	int ellipseError2 = 0;
+	int stoppingX2 = twoBSquare2*radiusX2;
+	int stoppingY2 = 0;
+	
+	int x0=0;
+	int y0=0;
+	float a = radiusX2;
+	float b = radiusY2;
+	float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+	int x1=round(r1*cos(beginAngle));
+	int y1=round(r1*sin(beginAngle));
+	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+	int x2=round(r2*cos(endAngle));
+	int y2=round(r2*sin(endAngle));
+	int dy0 = y2-y0;
+	int dx0 = x2-x0;
+	int xi0;
+	if (dx0<0) {
+		xi0=-1;
+		dx0=-dx0;
+	} else {
+		xi0=1;
+	}
+	int C0=0;
+	int dy1 = y1-y0;	
+	int dx1 = x1-x0;
+	int xi1;
+	if (dx1<0) {
+		xi1=-1;
+		dx1=-dx1;
+	} else {
+		xi1=1;
+	}
+	//	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
+	int C1=0;
+	int xx0,xx1;
+	xx0=x0;
+	xx1=x0;
+	if (dy0==0) 
+		xx0=x2;
+	if (dy1==0)
+		xx1=x1;
+	
+	//first stage, y'>-1
+	std::vector<int> endpoints;
+	while (stoppingX2>=stoppingY2) {
+		endpoints.clear();
+		if (-xa2>=xx0 && -xa2<=xx1) {
+			endpoints.push_back(-xa2);
+		} 
+		if (-xa1>=xx0 && -xa1<=xx1) {
+			endpoints.push_back(-xa1);
+		} 
+		if (xa1>=xx0 && xa1<=xx1) {
+			endpoints.push_back(xa1);
+		} 
+		if (xa2>=xx0 && xa2<=xx1) {
+			endpoints.push_back(xa2);
+		} 
+		if (-xa2<xx0 && xx0<=-xa1)
+			endpoints.push_back(xx0);
+		else if (xa1<xx0 && xx0<=xa2)
+			endpoints.push_back(xx0);
+		if (-xa2<=xx1 && xx1<-xa1)
+			endpoints.push_back(xx1);
+		else if (xa1<=xx1 && xx1<xa2)
+			endpoints.push_back(xx1);
+		std::sort(endpoints.begin(),endpoints.end());
+		for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+			doDrawFillLineH(dst, cx+endpoints[i],cx+endpoints[i+1], cy+ya, color);
+		}
+		ya+=1;
+		if (stoppingX1>=stoppingY1) {
+			stoppingY1 += twoASquare1;
+			ellipseError1 += YChange1;
+			YChange1 += twoASquare1;
+			if ((2*ellipseError1+XChange1)>0){
+				xa1-=1;
+				stoppingX1 -= twoBSquare1;
+				ellipseError1 += XChange1;
+				XChange1+=twoBSquare1;
+			}
+		}
+		stoppingY2 += twoASquare2;
+		ellipseError2 += YChange2;
+		YChange2 += twoASquare2;
+		if ((2*ellipseError2+XChange2)>0){
+			xa2-=1;
+			stoppingX2 -= twoBSquare2;
+			ellipseError2 += XChange2;
+			XChange2+=twoBSquare2;
+		}
+		if (dy0!=0) {
+			C0+=dx0;
+			while (C0>=dy0) {
+				xx0+=xi0;
+				C0-=dy0;
+			}
+		}
+		if (dy1!=0) {
+			C1+=dx1;
+			while (C1>=dy1) {
+				xx1+=xi1;
+				C1-=dy1;
+			}
+		}
+	}
+	//second stage, y'<-1
+	int xa=0;
+	int ya1=radiusY1;
+	int ya2=radiusY2;
+	XChange1 = radiusY1 * radiusY1;
+	YChange1 = radiusX1 * radiusX1 * (1-2*radiusY1);
+	ellipseError1 = 0;
+	stoppingX1 = 0;
+	stoppingY1 = twoASquare1*radiusY1;
+	XChange2 = radiusY2 * radiusY2;
+	YChange2 = radiusX2 * radiusX2 * (1-2*radiusY2);
+	ellipseError2 = 0;
+	stoppingX2 = 0;
+	stoppingY2 = twoASquare2*radiusY2;
+	
+	int yy0,yy1;
+	C0=0;
+	C1=0;
+	yy0=y0;
+	yy1=y0;
+	if (dx0==0) 
+		yy0=radiusY2;
+	if (dx1==0)
+		yy1=radiusY2;
+	bool l0_at_left = (dx0==0) || xi0>0;
+	bool l1_at_left = (dx1==0) || xi1>0;
+	while (stoppingX2<=stoppingY2) {
+		endpoints.clear();
+		if (l0_at_left ) {
+			if (ya1>=yy1 && ya1<=yy0) {
+				endpoints.push_back(ya1);
+			} 
+			if (ya2>=yy1 && ya2<=yy0) {
+				endpoints.push_back(ya2);
+			} 
+			if (ya1<yy0 && yy0<=ya2)
+				endpoints.push_back(yy0);
+			if (ya1<=yy1 && yy1<ya2)
+				endpoints.push_back(yy1);	
+			std::sort(endpoints.begin(),endpoints.end());
+			for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+				doDrawFillLineV(dst, cx+xa,cy+endpoints[i],cy+endpoints[i+1], color);
+			}			
+		} else {
+			if (!l1_at_left) {
+				if (ya1>=yy0 && ya1<=yy1) {
+					endpoints.push_back(ya1);
+				} 
+				if (ya2>=yy0 && ya2<=yy1) {
+					endpoints.push_back(ya2);
+				} 
+				if (ya1<=yy0 && yy0<ya2)
+					endpoints.push_back(yy0);
+				if (ya1<yy1 && yy1<=ya2)
+					endpoints.push_back(yy1);	
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy+endpoints[i],cy+endpoints[i+1], color);
+				} 
+			} else {
+				endpoints.clear();
+				if (ya1>=yy0)
+					endpoints.push_back(ya1);
+				if (ya2>=yy0)
+					endpoints.push_back(ya2);
+				if (ya1<=yy0 && yy0<ya2)
+					endpoints.push_back(yy0);
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy+endpoints[i],cy+endpoints[i+1], color);
+				} 
+				endpoints.clear();
+				if (ya1>=yy1)
+					endpoints.push_back(ya1);
+				if (ya2>=yy1)
+					endpoints.push_back(ya2);
+				if (ya1<=yy1 && yy1<ya2)
+					endpoints.push_back(yy1);
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx+xa,cy+endpoints[i],cy+endpoints[i+1], color);
+				} 
+			}			
+		} 
+
+//		TraceLog(LOG_WARNING,"%d %d %d %d %d %d",endpoints.size(),xa,ya1,ya2,yy0,yy1);
+		xa++;
+		if (stoppingX1<=stoppingY1) {
+			stoppingX1+=twoBSquare1;
+			ellipseError1 += XChange1;
+			XChange1+=twoBSquare1;
+			if ((2*ellipseError1+YChange1)>0) {
+				ya1-=1;
+				stoppingY1-=twoASquare1;
+				ellipseError1+=YChange1;
+				YChange1+=twoASquare1;
+			}							
+		}
+		stoppingX2+=twoBSquare2;
+		ellipseError2 += XChange2;
+		XChange2+=twoBSquare2;
+		if ((2*ellipseError2+YChange2)>0) {
+			ya2-=1;
+			stoppingY2-=twoASquare2;
+			ellipseError2+=YChange2;
+			YChange2+=twoASquare2;
+		}				
+		if (dx0!=0&&dy0!=0) {
+			C0+=dy0;
+			while (C0>=dx0) {
+				yy0+=1;
+				C0-=dx0;
+			}
+		}
+		if (dx1!=0&&dy1!=0) {
+			C1+=dy1;
+			while (C1>=dx1) {
+				yy1+=1;
+				C1-=dx1;
+			}
+		}
+	}		
+}
+
+static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
+	int radiusX1=radiusX-lineWidth/2;
+	int radiusX2=radiusX+lineWidth/2;
+	int radiusY1=radiusY-lineWidth/2;
+	int radiusY2=radiusY+lineWidth/2;
+	int twoASquare1=2*radiusX1*radiusX1;
+	int twoBSquare1=2*radiusY1*radiusY1;
+	int twoASquare2=2*radiusX2*radiusX2;
+	int twoBSquare2=2*radiusY2*radiusY2;
+	int xa1=radiusX1;
+	int xa2=radiusX2;
+	int ya=0;	
+	int XChange1 = radiusY1*radiusY1*(1-2*radiusX1);
+	int YChange1 = radiusX1*radiusX1;
+	int ellipseError1 = 0;
+	int stoppingX1 = twoBSquare1*radiusX1;
+	int stoppingY1 = 0;
+	int XChange2 = radiusY2*radiusY2*(1-2*radiusX2);
+	int YChange2 = radiusX2*radiusX2;
+	int ellipseError2 = 0;
+	int stoppingX2 = twoBSquare2*radiusX2;
+	int stoppingY2 = 0;
+	
+	float temp1 = 2*PI-endAngle;
+	float temp2 = 2*PI-beginAngle;
+	beginAngle = temp1;
+	endAngle = temp2;
+	int x0=0;
+	int y0=0;
+	float a = radiusX2;
+	float b = radiusY2;
+	float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+	int x1=round(r1*cos(beginAngle));
+	int y1=round(r1*sin(beginAngle));
+	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+	int x2=round(r2*cos(endAngle));
+	int y2=round(r2*sin(endAngle));
+	int dy0 = y2-y0;
+	int dx0 = x2-x0;
+	int xi0;
+	if (dx0<0) {
+		xi0=-1;
+		dx0=-dx0;
+	} else {
+		xi0=1;
+	}
+	int C0=0;
+	int dy1 = y1-y0;	
+	int dx1 = x1-x0;
+	int xi1;
+	if (dx1<0) {
+		xi1=-1;
+		dx1=-dx1;
+	} else {
+		xi1=1;
+	}
+	//	TraceLog(LOG_WARNING," -- %f %f %d %d %d %d",beginAngle,endAngle,dx0,dy0,dx1,dy1);
+	int C1=0;
+	int xx0,xx1;
+	xx0=x0;
+	xx1=x0;
+	if (dy0==0) 
+		xx0=x2;
+	if (dy1==0)
+		xx1=x1;
+	
+	//first stage, y'>-1
+	std::vector<int> endpoints;
+	while (stoppingX2>=stoppingY2) {
+		endpoints.clear();
+		if (-xa2>=xx0 && -xa2<=xx1) {
+			endpoints.push_back(-xa2);
+		} 
+		if (-xa1>=xx0 && -xa1<=xx1) {
+			endpoints.push_back(-xa1);
+		} 
+		if (xa1>=xx0 && xa1<=xx1) {
+			endpoints.push_back(xa1);
+		} 
+		if (xa2>=xx0 && xa2<=xx1) {
+			endpoints.push_back(xa2);
+		} 
+		if (-xa2<xx0 && xx0<=-xa1)
+			endpoints.push_back(xx0);
+		else if (xa1<xx0 && xx0<=xa2)
+			endpoints.push_back(xx0);
+		if (-xa2<=xx1 && xx1<-xa1)
+			endpoints.push_back(xx1);
+		else if (xa1<=xx1 && xx1<xa2)
+			endpoints.push_back(xx1);
+		std::sort(endpoints.begin(),endpoints.end());
+		for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+			doDrawFillLineH(dst, cx+endpoints[i],cx+endpoints[i+1], cy-ya, color);
+		}
+		ya+=1;
+		if (stoppingX1>=stoppingY1) {
+			stoppingY1 += twoASquare1;
+			ellipseError1 += YChange1;
+			YChange1 += twoASquare1;
+			if ((2*ellipseError1+XChange1)>0){
+				xa1-=1;
+				stoppingX1 -= twoBSquare1;
+				ellipseError1 += XChange1;
+				XChange1+=twoBSquare1;
+			}
+		}
+		stoppingY2 += twoASquare2;
+		ellipseError2 += YChange2;
+		YChange2 += twoASquare2;
+		if ((2*ellipseError2+XChange2)>0){
+			xa2-=1;
+			stoppingX2 -= twoBSquare2;
+			ellipseError2 += XChange2;
+			XChange2+=twoBSquare2;
+		}
+		if (dy0!=0) {
+			C0+=dx0;
+			while (C0>=dy0) {
+				xx0+=xi0;
+				C0-=dy0;
+			}
+		}
+		if (dy1!=0) {
+			C1+=dx1;
+			while (C1>=dy1) {
+				xx1+=xi1;
+				C1-=dy1;
+			}
+		}
+	}
+	//second stage, y'<-1
+	int xa=0;
+	int ya1=radiusY1;
+	int ya2=radiusY2;
+	XChange1 = radiusY1 * radiusY1;
+	YChange1 = radiusX1 * radiusX1 * (1-2*radiusY1);
+	ellipseError1 = 0;
+	stoppingX1 = 0;
+	stoppingY1 = twoASquare1*radiusY1;
+	XChange2 = radiusY2 * radiusY2;
+	YChange2 = radiusX2 * radiusX2 * (1-2*radiusY2);
+	ellipseError2 = 0;
+	stoppingX2 = 0;
+	stoppingY2 = twoASquare2*radiusY2;
+	
+	int yy0,yy1;
+	C0=0;
+	C1=0;
+	yy0=y0;
+	yy1=y0;
+	if (dx0==0) 
+		yy0=radiusY2;
+	if (dx1==0)
+		yy1=radiusY2;
+	bool l0_at_left = (dx0==0) || xi0>0;
+	bool l1_at_left = (dx1==0) || xi1>0;
+	while (stoppingX2<=stoppingY2) {
+		endpoints.clear();
+		if (l0_at_left ) {
+			if (ya1>=yy1 && ya1<=yy0) {
+				endpoints.push_back(ya1);
+			} 
+			if (ya2>=yy1 && ya2<=yy0) {
+				endpoints.push_back(ya2);
+			} 
+			if (ya1<yy0 && yy0<=ya2)
+				endpoints.push_back(yy0);
+			if (ya1<=yy1 && yy1<ya2)
+				endpoints.push_back(yy1);	
+			std::sort(endpoints.begin(),endpoints.end());
+			for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+				doDrawFillLineV(dst, cx+xa,cy-endpoints[i],cy-endpoints[i+1], color);
+			}			
+		} else {
+			if (!l1_at_left) {
+				if (ya1>=yy0 && ya1<=yy1) {
+					endpoints.push_back(ya1);
+				} 
+				if (ya2>=yy0 && ya2<=yy1) {
+					endpoints.push_back(ya2);
+				} 
+				if (ya1<=yy0 && yy0<ya2)
+					endpoints.push_back(yy0);
+				if (ya1<yy1 && yy1<=ya2)
+					endpoints.push_back(yy1);	
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy-endpoints[i],cy-endpoints[i+1], color);
+				} 
+			} else {
+				endpoints.clear();
+				if (ya1>=yy0)
+					endpoints.push_back(ya1);
+				if (ya2>=yy0)
+					endpoints.push_back(ya2);
+				if (ya1<=yy0 && yy0<ya2)
+					endpoints.push_back(yy0);
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy-endpoints[i],cy-endpoints[i+1], color);
+				} 
+				endpoints.clear();
+				if (ya1>=yy1)
+					endpoints.push_back(ya1);
+				if (ya2>=yy1)
+					endpoints.push_back(ya2);
+				if (ya1<=yy1 && yy1<ya2)
+					endpoints.push_back(yy1);
+				std::sort(endpoints.begin(),endpoints.end());
+				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
+					doDrawFillLineV(dst, cx+xa,cy-endpoints[i],cy-endpoints[i+1], color);
+				} 
+			}			
+		} 
+		
+		//		TraceLog(LOG_WARNING,"%d %d %d %d %d %d",endpoints.size(),xa,ya1,ya2,yy0,yy1);
+		xa++;
+		if (stoppingX1<=stoppingY1) {
+			stoppingX1+=twoBSquare1;
+			ellipseError1 += XChange1;
+			XChange1+=twoBSquare1;
+			if ((2*ellipseError1+YChange1)>0) {
+				ya1-=1;
+				stoppingY1-=twoASquare1;
+				ellipseError1+=YChange1;
+				YChange1+=twoASquare1;
+			}							
+		}
+		stoppingX2+=twoBSquare2;
+		ellipseError2 += XChange2;
+		XChange2+=twoBSquare2;
+		if ((2*ellipseError2+YChange2)>0) {
+			ya2-=1;
+			stoppingY2-=twoASquare2;
+			ellipseError2+=YChange2;
+			YChange2+=twoASquare2;
+		}				
+		if (dx0!=0&&dy0!=0) {
+			C0+=dy0;
+			while (C0>=dx0) {
+				yy0+=1;
+				C0-=dx0;
+			}
+		}
+		if (dx1!=0&&dy1!=0) {
+			C1+=dy1;
+			while (C1>=dx1) {
+				yy1+=1;
+				C1-=dx1;
+			}
+		}
+	}		
+}
+
+void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
+	float totalAngle=endAngle-beginAngle;
+	if (totalAngle>=2*PI) {
+		ImageDrawEllipseEx(dst,cx,cy,radiusX, radiusY,lineWidth, color);
+		return;
+	}
+	if (totalAngle>0) {
+		beginAngle=normalizedAngle(beginAngle);
+		endAngle=normalizedAngle(beginAngle+totalAngle);
+	} else {
+		beginAngle=normalizedAngle(endAngle);
+		endAngle=normalizedAngle(beginAngle-totalAngle);
+	}
+	if (endAngle>=beginAngle) {
+		if (endAngle<=PI) {
+			doDrawArc1(dst,cx,cy,radiusX,radiusY, beginAngle,endAngle,lineWidth, color);
+		} else if (beginAngle>=PI) {
+			doDrawArc2(dst,cx,cy,radiusX,radiusY, beginAngle,endAngle,lineWidth, color);			
+		} else {
+			doDrawArc1(dst,cx,cy,radiusX,radiusY,beginAngle,PI,lineWidth, color);						
+			doDrawArc2(dst,cx,cy,radiusX,radiusY,PI,endAngle,lineWidth, color);						
+		}
+	} else {
+		if (beginAngle<=PI) {
+			doDrawArc1(dst,cx,cy,radiusX,radiusY,beginAngle,PI,lineWidth, color);						
+			doDrawArc1(dst,cx,cy,radiusX,radiusY,0,endAngle,lineWidth, color);						
+			doDrawArc2(dst,cx,cy,radiusX,radiusY,PI,2*PI,lineWidth, color);						
+		} else if (endAngle<=PI){
+			doDrawArc1(dst,cx,cy,radiusX,radiusY,0,endAngle,lineWidth, color);									
+			doDrawArc2(dst,cx,cy,radiusX,radiusY,beginAngle,2*PI,lineWidth, color);									
+		} else {
+			doDrawArc1(dst,cx,cy,radiusX,radiusY,0,PI,lineWidth, color);									
+			doDrawArc2(dst,cx,cy,radiusX,radiusY,beginAngle,2*PI,lineWidth, color);									
+			doDrawArc2(dst,cx,cy,radiusX,radiusY,PI,endAngle,lineWidth, color);
 		}
 	}
 }

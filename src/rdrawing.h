@@ -148,8 +148,8 @@ extern "C" {            // Prevents name mangling of functions
 	void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, Color fillColor);
 	void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, int borderWidth, Color color);
 	
-	void ImageFillArcEx(Image* dst,int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor);
-	void ImageFillSectorEx(Image* dst,int cx, int cy, int radius, float beginAngle, float endAngle, Color fillColor);
+	void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX, int radiusY,  float beginAngle, float endAngle, int lineWidth, Color color);
+	void ImageFillSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, Color fillColor);
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
 #endif
