@@ -62,7 +62,7 @@ int main() {
 ```
 
 | Function | Usage |
-|----+-----|
+|---|---|
 | ImageDrawPointEx		| Draw a point to the image |
 | ImageDrawArcEx		| Draw an ellipse arc to the image, using the provided line width and color |
 | ImageDrawLineEx		| Draw a line to the image, using the provided line width and color |
@@ -114,7 +114,7 @@ It also provided some interactive functions while drawing:
  - Press F3 toggle show/hide of the turtle.
  - Press F5 Capture the screen.
 | Function | Usage |
-|----+-----|
+|---|---|
 | initWorld		| Init the turtle world window |
 | closeWorld	| Destory the turtle world window |
 | forword / fd	| Move the turtle forward |
