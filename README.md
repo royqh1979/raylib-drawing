@@ -113,6 +113,7 @@ It also provided some interactive functions while drawing:
  - Press F2 toggle show/hide of auxilary grids.
  - Press F3 toggle show/hide of the turtle.
  - Press F5 Capture the screen.
+
 | Function | Usage |
 |---|---|
 | initWorld		| Init the turtle world window |
