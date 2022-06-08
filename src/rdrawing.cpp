@@ -1399,6 +1399,8 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
+	if (x1==x2 && y1==y2)
+		return;
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
@@ -1653,6 +1655,8 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
+	if (x1==x2 && y1==y2)
+		return;
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
