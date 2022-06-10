@@ -2,6 +2,7 @@
 #define RTURTLE_H
 
 #include <raylib.h>
+#include "utils.h"
 #include "rdrawing.h"
 
 /**
@@ -98,7 +99,7 @@ extern "C" {            // Prevents name mangling of functions
 	void drawEllipse(int centerX, int centerY, int radiusX, int radiusY);
 	void fillEllipse(int centerX, int centerY, int radiusX, int radiusY, Color fillColor);
 	void fillCircle(int centerX, int centerY, int radius, Color fillColor);
-	void drawCircle(int centerX, int centerY, int radius, Color fillColor);
+	void drawCircle(int centerX, int centerY, int radius);
 	
 	
 #if defined(__cplusplus)

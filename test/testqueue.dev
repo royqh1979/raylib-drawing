@@ -28,8 +28,7 @@ CustomMakefile =
 IncludeVersionInfo = 0
 SupportXPThemes = 0
 CompilerSet = 1
-CompilerSettings = 000000a000000000000010000
-UnitCount = 2
+UnitCount = 3
 UsePrecompiledHeader = 0
 PrecompiledHeader = 
 UseUTF8 = 0
@@ -74,6 +73,30 @@ DetectEncoding = 1
 Encoding = 0
 
 
+[Unit2]
+FileName = ../src/utils.c
+CompileCpp = 1
+Folder = 头文件
+Compile = 1
+Link = 1
+Priority = 1000
+OverrideBuildCmd = 0
+BuildCmd = 
+DetectEncoding = 1
+
+
+[Unit3]
+FileName = ../src/utils.h
+CompileCpp = 0
+Folder = 头文件
+Compile = 0
+Link = 0
+Priority = 1000
+OverrideBuildCmd = 0
+BuildCmd = 
+DetectEncoding = 1
+
+
 [CompilerSettings]
 cc_cmd_opt_abort_on_error = 
 cc_cmd_opt_ansi = 
@@ -82,34 +105,22 @@ cc_cmd_opt_check_iso_conformance =
 cc_cmd_opt_debug_info = on
 cc_cmd_opt_inhibit_all_warning = 
 cc_cmd_opt_instruction = 
+cc_cmd_opt_no_asm = 
 cc_cmd_opt_only_gen_asm_code = 
-cc_cmd_opt_optimize = 2
+cc_cmd_opt_optimize = 
 cc_cmd_opt_pointer_size = 
 cc_cmd_opt_profile_info = 
 cc_cmd_opt_std = 
+cc_cmd_opt_stop_after_preprocessing = 
 cc_cmd_opt_syntax_only = 
 cc_cmd_opt_traditional_cpp = 
 cc_cmd_opt_tune = 
 cc_cmd_opt_use_pipe = 
 cc_cmd_opt_verbose_asm = 
-cc_cmd_opt_warning_all = 
+cc_cmd_opt_warning_all = on
 cc_cmd_opt_warning_as_error = 
-cc_cmd_opt_warning_extra = 
+cc_cmd_opt_warning_extra = on
 link_cmd_opt_link_objc = 
 link_cmd_opt_no_console = 
 link_cmd_opt_no_link_stdlib = 
 link_cmd_opt_strip_exe = 
-cc_cmd_opt_no_asm = 
-cc_cmd_opt_stop_after_preprocessing = 
-
-
-[Unit2]
-FileName = ../src/container.h
-CompileCpp = 1
-Folder = 源文件
-Compile = 1
-Link = 1
-Priority = 1000
-OverrideBuildCmd = 0
-BuildCmd = 
-DetectEncoding = 1

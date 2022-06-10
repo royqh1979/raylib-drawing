@@ -10,7 +10,7 @@ int main() {
 	drawEllipse(50,50,150,250);
 	
 	fillCircle(-200,-200,40,DARKCYAN);
-	drawCircle(-100,-100,50,LIGHTRED);
+	drawCircle(-100,-100,50);
 
     //setImmediate(TRUE);
     //setPenColor(BLACK);
