@@ -1,6 +1,6 @@
 [Project]
-FileName = polygon.dev
-Name = polygon
+FileName = sector.dev
+Name = sector
 Type = 1
 Ver = 3
 ObjFiles = 
@@ -19,7 +19,7 @@ ObjectOutput =
 LogOutput = 
 LogOutputEnabled = 0
 OverrideOutput = 0
-OverrideOutputName = polygon.exe
+OverrideOutputName = sector.exe
 HostApplication = 
 Folders = 
 CommandLine = 
@@ -60,7 +60,7 @@ SyncProduct = 1
 
 
 [Unit1]
-FileName = polygon.c
+FileName = sector.c
 CompileCpp = 0
 Folder = 
 Compile = 1

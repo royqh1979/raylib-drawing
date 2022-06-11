@@ -533,10 +533,6 @@ static void doDrawFillLineV(Image* dst,int x,int y1, int y2,Color color) {
 	}
 }
 
-static bool sortPolyEdgeByx(PPolyEdge e1,PPolyEdge e2) {
-	return e1->x<e2->x;
-}
-
 // fill polygon using scan line fill algorithm (http://www.cad.zju.edu.cn/home/zhx/CG/2016/lib/exe/fetch.php?media=fillalgorithm.pdf)
 void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vertice, Color color) {
 	
@@ -607,18 +603,20 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 	IntList_init(&intersects,num_vertice);
 	PolyEdgeList_init(&horizontalEdges,num_vertice);
 	for (int y=min_y;y<=max_y;y++) {
-		PolyEdgeList_clear(&horizontalEdges);
-		IntList_clear(&intersects);
 		//add edges to act;
 		while(!PolyEdgeHeap_empty(&edgeTable)) {
 			PPolyEdge e = PolyEdgeHeap_min(&edgeTable);
 			if (e->min_y!=y)
 				break;
+			PolyEdgeHeap_remove_min(&edgeTable);
 			PolyEdgeList_append(&acl,e);
 		}
 		
 		//fill one horizontal line that's visible
 		if (y>0 && y<dst->height) {
+			PolyEdgeList_clear(&horizontalEdges);
+			IntList_clear(&intersects);
+			
 			//sort acl by x;
 			PolyEdgeList_sort_by_x(&acl);
 			for (int i=0;i<acl.size;i++) {
@@ -636,8 +634,9 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 				}
 			}
 
+//			TraceLog(LOG_WARNING,"%d %d %d",y, acl.size,intersects.size);
 			for (int i=0;i+1<intersects.size;i+=2) {
-				//			TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size(),i,intersects[i],intersects[i+1]);
+//				TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size,i,intersects.edges[i],intersects.edges[i+1]);
 				doDrawFillLineH(dst,intersects.edges[i],intersects.edges[i+1],y,color);
 			}
 			for (int i=0;i<horizontalEdges.size;i++) {
@@ -679,6 +678,7 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 			i++;
 		}
 	}
+	
 	PolyEdgeHeap_free(&edgeTable);
 	PolyEdgeList_free_all_nodes(&edgeList);
 	PolyEdgeList_free(&edgeList);
@@ -686,6 +686,24 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 	PolyEdgeList_free(&horizontalEdges);
 	IntList_free(&intersects);
 	
+//	FILE *fp=fopen("r:\\test.dat","w");
+//	fprintf(fp,"int num=%d;\n",num_vertice);
+//	fprintf(fp,"int vx[]={\n");
+//	for (int i=0;i<num_vertice;i++) {
+//		fprintf(fp,"\t%d",vertice_x[i]);
+//		if (i<num_vertice-1)
+//			fprintf(fp,",\n");
+//	}
+//	fprintf(fp,"};\n");
+//	fprintf(fp,"int vy[]={\n");
+//	for (int i=0;i<num_vertice;i++) {
+//		fprintf(fp,"\t%d",vertice_y[i]);
+//		if (i<num_vertice-1)
+//			fprintf(fp,",\n");
+//	}
+//	fprintf(fp,"};\n");
+//	fclose(fp);
+		
 }
 
 void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color) {
@@ -1070,6 +1088,8 @@ static void doFillSector1(Image* dst, int cx, int cy, int radiusX, int radiusY, 
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
+	if (x1==x2 && y1==y2)
+		return;
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
@@ -1218,6 +1238,9 @@ static void doFillSector2(Image* dst, int cx, int cy, int radiusX,int radiusY, f
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
+	if (x1==x2 && y1==y2)
+		return;
+
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
@@ -1925,4 +1948,20 @@ void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float be
 		}
 	}
 }
+
+void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, int lineWidth, Color color) {
+	ImageDrawArcEx(dst,cx,cy,radiusX,radiusY,beginAngle,endAngle,lineWidth,color);
+	float a = radiusX;
+	float b = radiusY;
+	float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+	int x1=round(r1*cos(beginAngle));
+	int y1=round(r1*sin(beginAngle));
+	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+	int x2=round(r2*cos(endAngle));
+	int y2=round(r2*sin(endAngle));
+	ImageDrawLineEx(dst,cx,cy,cx+x1,cy+y1,lineWidth,color);
+	if (x1!=x2 || y1!=y2)
+		ImageDrawLineEx(dst,cx,cy,cx+x2,cy+y2,lineWidth,color);
+}
+
 

@@ -61,7 +61,7 @@ extern "C" {            // Prevents name mangling of functions
 	void IntQueue_clear(IntQueue* queue);
 	
 	void PolyEdgeHeap_init(PolyEdgeHeap* heap, int capacity);
-	bool PolyEdgeHeap_insert(PolyEdgeHeap* heap, PPolyEdge pEdge);
+	void PolyEdgeHeap_insert(PolyEdgeHeap* heap, PPolyEdge pEdge);
 	bool PolyEdgeHeap_empty(PolyEdgeHeap* heap);
 	PPolyEdge PolyEdgeHeap_min(PolyEdgeHeap* heap);
 	void PolyEdgeHeap_remove_min(PolyEdgeHeap* heap);

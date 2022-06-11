@@ -9,7 +9,7 @@ void genLine(Image* img) {
 	y2=GetRandomValue(100,500);
 	ImageClearBackground(img,WHITE);
 	ImageFillRoundRectEx(img,x1,y1,x2-x1,y2-y1,40,20,DARKCYAN);
-	ImageDrawRoundRectEx(img,x1,y1,x2-x1,y2-y1,40,20,1,LIGHTRED);
+	ImageDrawRoundRectEx(img,x1,y1,x2-x1,y2-y1,40,20,5,LIGHTRED);
 }
 
 int main() {

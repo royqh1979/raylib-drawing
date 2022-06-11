@@ -97,7 +97,7 @@ void PolyEdgeHeap_free(PolyEdgeHeap* heap) {
 	heap->capacity=0;
 }
 
-bool PolyEdgeHeap_insert(PolyEdgeHeap* heap, PPolyEdge pEdge) {
+void PolyEdgeHeap_insert(PolyEdgeHeap* heap, PPolyEdge pEdge) {
 	//	if (heap->size>=heap->capacity)
 	//		return false;
 	heap->size++;
@@ -109,6 +109,7 @@ bool PolyEdgeHeap_insert(PolyEdgeHeap* heap, PPolyEdge pEdge) {
 		heap->edges[parent]=heap->edges[i];
 		heap->edges[i]=p;
 		i=parent;
+		parent=heap_parent(i);
 	}
 }
 
@@ -138,7 +139,7 @@ void PolyEdgeHeap_floatdown(PolyEdgeHeap* heap, int i) {
 		smallest=l;
 	else
 		smallest=i;
-	if (r<=heap->size && heap->edges[r]->min_y<heap->edges[i]->min_y)
+	if (r<=heap->size && heap->edges[r]->min_y<heap->edges[smallest]->min_y)
 		smallest=r;
 	if (smallest!=i) {
 		PPolyEdge p=heap->edges[smallest];
@@ -187,7 +188,7 @@ void PolyEdgeList_free_all_nodes(PolyEdgeList* list){
 	}
 }
 
-static int _compare_polyedge_by_x(void * p1, void * p2) {
+static int _compare_polyedge_by_x(const void * p1, const void * p2) {
 	PPolyEdge* pp1=(PPolyEdge*)p1;
 	PPolyEdge* pp2=(PPolyEdge*)p2;
 	return (*pp1)->x-(*pp2)->x;
@@ -220,7 +221,7 @@ void IntList_free(IntList* list){
 	list->edges=NULL;
 }
 
-static int _compare_int(void * p1, void * p2) {
+static int _compare_int(const void * p1, const void * p2) {
 	int* pp1=(int*)p1;
 	int* pp2=(int*)p2;
 	return (*pp1)-(*pp2);

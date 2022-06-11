@@ -1,6 +1,6 @@
 [Project]
-FileName = polygon.dev
-Name = polygon
+FileName = doramon.dev
+Name = doramon
 Type = 1
 Ver = 3
 ObjFiles = 
@@ -19,7 +19,7 @@ ObjectOutput =
 LogOutput = 
 LogOutputEnabled = 0
 OverrideOutput = 0
-OverrideOutputName = polygon.exe
+OverrideOutputName = doramon.exe
 HostApplication = 
 Folders = 
 CommandLine = 
@@ -60,7 +60,7 @@ SyncProduct = 1
 
 
 [Unit1]
-FileName = polygon.c
+FileName = doramon.c
 CompileCpp = 0
 Folder = 
 Compile = 1
@@ -74,6 +74,18 @@ Encoding = 0
 
 
 [Unit2]
+FileName = ../src/rdrawing.c
+CompileCpp = 1
+Folder = 源文件
+Compile = 1
+Link = 1
+Priority = 1000
+OverrideBuildCmd = 0
+BuildCmd = 
+DetectEncoding = 1
+
+
+[Unit3]
 FileName = ../src/rdrawing.h
 CompileCpp = 0
 Folder = 源文件
@@ -85,22 +97,10 @@ BuildCmd =
 DetectEncoding = 1
 
 
-[Unit3]
-FileName = ../src/rdrawing.c
-CompileCpp = 0
-Folder = 源文件
-Compile = 1
-Link = 1
-Priority = 1000
-OverrideBuildCmd = 0
-BuildCmd = 
-DetectEncoding = 1
-
-
 [Unit4]
 FileName = ../src/utils.c
 CompileCpp = 0
-Folder = 源文件
+Folder = 
 Compile = 1
 Link = 1
 Priority = 1000
@@ -112,7 +112,7 @@ DetectEncoding = 1
 [Unit5]
 FileName = ../src/utils.h
 CompileCpp = 0
-Folder = 源文件
+Folder = 
 Compile = 0
 Link = 0
 Priority = 1000
