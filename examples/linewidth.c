@@ -24,7 +24,6 @@ int main() {
 
 	genLine(&img);
 	SetTargetFPS(120);
-	int num=0;
 	while (!WindowShouldClose()) {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
 			genLine(&img);

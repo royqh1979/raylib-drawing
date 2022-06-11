@@ -74,12 +74,14 @@ extern "C" {            // Prevents name mangling of functions
 	void PolyEdgeList_clear(PolyEdgeList* list);
 	void PolyEdgeList_free(PolyEdgeList* list);
 	void PolyEdgeList_free_all_nodes(PolyEdgeList* list);
+	void PolyEdgeList_sort_by_x(PolyEdgeList* list);
 	
 	void IntList_init(IntList* list, int capacity);
 	void IntList_append(IntList* list, int data);
 	void IntList_remove(IntList* list, int i);
 	void IntList_clear(IntList* list);
 	void IntList_free(IntList* list);
+	void IntList_sort(IntList *list);
 	
 	
 #if defined(__cplusplus)

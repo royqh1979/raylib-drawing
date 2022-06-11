@@ -2,7 +2,7 @@
 
 static IntQueueNode* int_queue_create_node() {
 	IntQueueNode* p;
-	p=(IntQueueNode*)malloc(sizeof(IntQueue_Node));
+	p=(IntQueueNode*)malloc(sizeof(IntQueueNode));
 	p->front_idx=0;
 	p->end_idx=0;
 	p->next=NULL;
@@ -59,7 +59,7 @@ int IntQueue_pop(IntQueue* queue) {
 void IntQueue_clear(IntQueue* queue) {
 	IntQueueNode* p=queue->head;	
 	while (p!=NULL) {
-		IntQueue_Node* q=p;
+		IntQueueNode* q=p;
 		p=p->next;
 		free(q);
 	}
@@ -187,6 +187,16 @@ void PolyEdgeList_free_all_nodes(PolyEdgeList* list){
 	}
 }
 
+static int _compare_polyedge_by_x(void * p1, void * p2) {
+	PPolyEdge* pp1=(PPolyEdge*)p1;
+	PPolyEdge* pp2=(PPolyEdge*)p2;
+	return (*pp1)->x-(*pp2)->x;
+}
+
+void PolyEdgeList_sort_by_x(PolyEdgeList* list){
+	qsort(list->edges,list->size,sizeof(PPolyEdge), _compare_polyedge_by_x);
+}
+
 void IntList_init(IntList* list, int capacity){
 	list->capacity=capacity;
 	list->size=0;
@@ -208,4 +218,14 @@ void IntList_free(IntList* list){
 	list->capacity=0;
 	free(list->edges);
 	list->edges=NULL;
+}
+
+static int _compare_int(void * p1, void * p2) {
+	int* pp1=(int*)p1;
+	int* pp2=(int*)p2;
+	return (*pp1)-(*pp2);
+}
+
+void IntList_sort(IntList *list){
+	qsort(list->edges,list->size,sizeof(int), _compare_int);	
 }

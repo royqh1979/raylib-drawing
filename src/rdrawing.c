@@ -540,14 +540,17 @@ static bool sortPolyEdgeByx(PPolyEdge e1,PPolyEdge e2) {
 // fill polygon using scan line fill algorithm (http://www.cad.zju.edu.cn/home/zhx/CG/2016/lib/exe/fetch.php?media=fillalgorithm.pdf)
 void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vertice, Color color) {
 	
-	PolyEdge_Heap edgeTable;
-	PPolyEdge *edgeList;
+	PolyEdgeHeap edgeTable;
+	PolyEdgeList edgeList;
+	PolyEdgeList  acl;
+	IntList intersects;
+	PolyEdgeList horizontalEdges;
 	int min_y=-1,max_y=1;
 	if (num_vertice<3)
 		return;
 	// Create Edge Table
 	PolyEdgeHeap_init(&edgeTable,num_vertice);
-	edgeList=(PPolyEdge*)malloc(sizeof(PPolyEdge)*num_vertice);
+	PolyEdgeList_init(&edgeList,num_vertice);
 	for (int i=0;i<num_vertice;i++) {
 		PPolyEdge e= (PPolyEdge)malloc(sizeof(PolyEdge));
 		int i2=(i+1);
@@ -586,7 +589,7 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 			e->x=e->x2;
 		}
 		PolyEdgeHeap_insert(&edgeTable,e);
-		edgeList[i]=e;
+		PolyEdgeList_append(&edgeList,e);
 		if (0==i) {
 			min_y = e->min_y;
 			max_y = e->max_y;
@@ -600,49 +603,60 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 		//			i,e->x1,e->x2,e->min_y,e->max_y,e->x,e->max_y_buddy);
 	}
 	
-	PolyEdge_List  acl;
-	std::vector<int> intersects;
-	std::vector<PPolyEdge> horizontalEdges;
+	PolyEdgeList_init(&acl,num_vertice);
+	IntList_init(&intersects,num_vertice);
+	PolyEdgeList_init(&horizontalEdges,num_vertice);
 	for (int y=min_y;y<=max_y;y++) {
-		intersects.clear();
-		horizontalEdges.clear();
+		PolyEdgeList_clear(&horizontalEdges);
+		IntList_clear(&intersects);
 		//add edges to act;
-		auto edges = edgeTable.equal_range(y);
-		if (edges.first!=std::end(edgeTable)) {
-			for (auto i=edges.first;i!=edges.second; i++) {
-				PPolyEdge e = (*i).second;
-				acl.push_back(e);	
-			}
+		while(!PolyEdgeHeap_empty(&edgeTable)) {
+			PPolyEdge e = PolyEdgeHeap_min(&edgeTable);
+			if (e->min_y!=y)
+				break;
+			PolyEdgeList_append(&acl,e);
 		}
-		//sort acl by x;
-		std::sort(acl.begin(),acl.end(),sortPolyEdgeByx);
-		for (size_t i=0;i<acl.size();i++) {
-			PPolyEdge e1 = acl[i];
-			
-			if (e1->dy==0) {
-				horizontalEdges.push_back(e1);
-			} else if (y==e1->min_y) { 
-				intersects.push_back(e1->x);
-			} else if (y==e1->max_y) {
-				PPolyEdge e2=edgeList[e1->max_y_buddy];
-				if (y!=e2->min_y) 
-					intersects.push_back(e1->x);
-			} else {
-				intersects.push_back(e1->x);
+		
+		//fill one horizontal line that's visible
+		if (y>0 && y<dst->height) {
+			//sort acl by x;
+			PolyEdgeList_sort_by_x(&acl);
+			for (int i=0;i<acl.size;i++) {
+				PPolyEdge e1 = acl.edges[i];
+				if (e1->dy==0) {
+					PolyEdgeList_append(&horizontalEdges,e1);
+				} else if (y==e1->min_y) {
+					IntList_append(&intersects, e1->x);
+				} else if (y==e1->max_y) {
+					PPolyEdge e2=edgeList.edges[e1->max_y_buddy];
+					if (y!=e2->min_y) 
+						IntList_append(&intersects, e1->x);
+				} else {
+					IntList_append(&intersects, e1->x);
+				}
+			}
+
+			for (int i=0;i+1<intersects.size;i+=2) {
+				//			TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size(),i,intersects[i],intersects[i+1]);
+				doDrawFillLineH(dst,intersects.edges[i],intersects.edges[i+1],y,color);
+			}
+			for (int i=0;i<horizontalEdges.size;i++) {
+				PPolyEdge e=horizontalEdges.edges[i];
+				doDrawFillLineH(dst,e->x1,e->x2,y,color);			
 			}
 		}
 		//remove edges that no need; 
 		//update edges' x
-		auto it=acl.begin();
-		while (it!=acl.end()) {
-			//remove edges that no need; 
-			if ((*it)->max_y==y) {
-				it=acl.erase(it);
+		int i=0;
+		while (i<acl.size) {
+			//remove edges that no need;
+			PPolyEdge e=acl.edges[i];
+			if (e->max_y==y) {
+				PolyEdgeList_remove(&acl,i);
 				continue;
 			}
 			//update edges' x
 			//Bresenham’s or mid-point scan line conversion algorithm
-			PPolyEdge e = (*it);
 			if (e->dx==0) {
 				
 			} else if (e->dy>0) {
@@ -662,18 +676,16 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 				if (e->x<e->x1)
 					e->x=e->x1;
 			}
-			it++;
-		}
-		
-		for (size_t i=0;i+1<intersects.size();i+=2) {
-			//			TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size(),i,intersects[i],intersects[i+1]);
-			doDrawFillLineH(dst,intersects[i],intersects[i+1],y,color);
-		}
-		for (PPolyEdge e:horizontalEdges) {
-			doDrawFillLineH(dst,e->x1,e->x2,y,color);			
+			i++;
 		}
 	}
 	PolyEdgeHeap_free(&edgeTable);
+	PolyEdgeList_free_all_nodes(&edgeList);
+	PolyEdgeList_free(&edgeList);
+	PolyEdgeList_free(&acl);
+	PolyEdgeList_free(&horizontalEdges);
+	IntList_free(&intersects);
+	
 }
 
 void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color) {
@@ -820,9 +832,9 @@ void ImageFillRectangleEx(Image* dst, int left, int top, int width, int height, 
 	int right = left+width;
 	int bottom = top+height;
 	if (left>right) 
-		std::swap(left,right);
+		swapInt(&left,&right);
 	if (top>bottom)
-		std::swap(top,bottom);
+		swapInt(&top,&bottom);
 	for (int y=top;y<=bottom;y++) {
 		doDrawFillLineH(dst,left,right,y,fillColor);
 	}	
@@ -831,9 +843,9 @@ void ImageDrawRectangleEx(Image* dst, int left, int top, int width, int height, 
 	int right = left+width;
 	int bottom = top+height;
 	if (left>right) 
-		std::swap(left,right);
+		swapInt(&left,&right);
 	if (top>bottom)
-		std::swap(top,bottom);
+		swapInt(&top,&bottom);
 	ImageDrawLineEx(dst,left,top,right,top,borderWidth,color);
 	ImageDrawLineEx(dst,right,top,right,bottom,borderWidth,color);
 	ImageDrawLineEx(dst,left,bottom,right,bottom,borderWidth,color);
@@ -844,19 +856,19 @@ void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, 
 	int right = left+width;
 	int bottom = top+height;
 	if (left>right) 
-		std::swap(left,right);
+		swapInt(&left,&right);
 	if (top>bottom)
-		std::swap(top,bottom);
-	rx=std::min(rx,(right-left)/2);
-	ry=std::min(ry,(bottom-top)/2);
-	int x0=left;
+		swapInt(&top,&bottom);
+	rx=MIN(rx,(right-left)/2);
+	ry=MIN(ry,(bottom-top)/2);
+//	int x0=left;
 	int x1=left+rx;
 	int x2=right-rx;
-	int x3=right;
-	int y0=top;
+//	int x3=right;
+//	int y0=top;
 	int y1=top+ry;
 	int y2=bottom-ry;
-	int y3=bottom;
+//	int y3=bottom;
 	int twoASquare=2*rx*rx;
 	int twoBSquare=2*ry*ry;
 	int x=rx;
@@ -913,11 +925,11 @@ void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, 
 	int right = left+width;
 	int bottom = top+height;
 	if (left>right) 
-		std::swap(left,right);
+		swapInt(&left,&right);
 	if (top>bottom)
-		std::swap(top,bottom);
-	rx=std::min(rx,(right-left)/2);
-	ry=std::min(ry,(bottom-top)/2);
+		swapInt(&top,&bottom);
+	rx=MIN(rx,(right-left)/2);
+	ry=MIN(ry,(bottom-top)/2);
 	int bx0=left;
 	int bx1=left+rx;
 	int bx2=right-rx;
@@ -1429,32 +1441,33 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 		xx1=x1;
 	
 	//first stage, y'>-1
-	std::vector<int> endpoints;
+	IntList endpoints;
+	IntList_init(&endpoints,4);
 	while (stoppingX2>=stoppingY2) {
-		endpoints.clear();
+		IntList_clear(&endpoints);
 		if (-xa2>=xx0 && -xa2<=xx1) {
-			endpoints.push_back(-xa2);
+			IntList_append(&endpoints,-xa2);
 		} 
 		if (-xa1>=xx0 && -xa1<=xx1) {
-			endpoints.push_back(-xa1);
+			IntList_append(&endpoints,-xa1);
 		} 
 		if (xa1>=xx0 && xa1<=xx1) {
-			endpoints.push_back(xa1);
+			IntList_append(&endpoints,xa1);
 		} 
 		if (xa2>=xx0 && xa2<=xx1) {
-			endpoints.push_back(xa2);
+			IntList_append(&endpoints,xa2);
 		} 
 		if (-xa2<xx0 && xx0<=-xa1)
-			endpoints.push_back(xx0);
+			IntList_append(&endpoints,xx0);
 		else if (xa1<xx0 && xx0<=xa2)
-			endpoints.push_back(xx0);
+			IntList_append(&endpoints,xx0);
 		if (-xa2<=xx1 && xx1<-xa1)
-			endpoints.push_back(xx1);
+			IntList_append(&endpoints,xx1);
 		else if (xa1<=xx1 && xx1<xa2)
-			endpoints.push_back(xx1);
-		std::sort(endpoints.begin(),endpoints.end());
-		for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-			doDrawFillLineH(dst, cx+endpoints[i],cx+endpoints[i+1], cy+ya, color);
+			IntList_append(&endpoints,xx1);
+		IntList_sort(&endpoints);
+		for (int i=0;i+1<endpoints.size;i+=2) {
+			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy+ya, color);
 		}
 		ya+=1;
 		if (stoppingX1>=stoppingY1) {
@@ -1519,60 +1532,60 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	bool l0_at_left = (dx0==0) || xi0>0;
 	bool l1_at_left = (dx1==0) || xi1>0;
 	while (stoppingX2<=stoppingY2) {
-		endpoints.clear();
+		IntList_clear(&endpoints);
 		if (l0_at_left ) {
 			if (ya1>=yy1 && ya1<=yy0) {
-				endpoints.push_back(ya1);
+				IntList_append(&endpoints,ya1);
 			} 
 			if (ya2>=yy1 && ya2<=yy0) {
-				endpoints.push_back(ya2);
+				IntList_append(&endpoints,ya2);
 			} 
 			if (ya1<yy0 && yy0<=ya2)
-				endpoints.push_back(yy0);
+				IntList_append(&endpoints,yy0);
 			if (ya1<=yy1 && yy1<ya2)
-				endpoints.push_back(yy1);	
-			std::sort(endpoints.begin(),endpoints.end());
-			for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-				doDrawFillLineV(dst, cx+xa,cy+endpoints[i],cy+endpoints[i+1], color);
+				IntList_append(&endpoints,yy1);
+			IntList_sort(&endpoints);
+			for (int i=0;i+1<endpoints.size;i+=2) {
+				doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 			}			
 		} else {
 			if (!l1_at_left) {
 				if (ya1>=yy0 && ya1<=yy1) {
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				} 
 				if (ya2>=yy0 && ya2<=yy1) {
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				} 
 				if (ya1<=yy0 && yy0<ya2)
-					endpoints.push_back(yy0);
+					IntList_append(&endpoints,yy0);
 				if (ya1<yy1 && yy1<=ya2)
-					endpoints.push_back(yy1);	
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy+endpoints[i],cy+endpoints[i+1], color);
+					IntList_append(&endpoints,yy1);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 				} 
 			} else {
-				endpoints.clear();
+				IntList_clear(&endpoints);
 				if (ya1>=yy0)
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				if (ya2>=yy0)
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				if (ya1<=yy0 && yy0<ya2)
-					endpoints.push_back(yy0);
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy+endpoints[i],cy+endpoints[i+1], color);
-				} 
-				endpoints.clear();
+					IntList_append(&endpoints,yy0);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
+				}
+				IntList_clear(&endpoints);
 				if (ya1>=yy1)
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				if (ya2>=yy1)
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				if (ya1<=yy1 && yy1<ya2)
-					endpoints.push_back(yy1);
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx+xa,cy+endpoints[i],cy+endpoints[i+1], color);
+					IntList_append(&endpoints,yy1);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 				} 
 			}			
 		} 
@@ -1613,7 +1626,8 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 				C1-=dx1;
 			}
 		}
-	}		
+	}
+	IntList_free(&endpoints);
 }
 
 static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
@@ -1685,32 +1699,33 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 		xx1=x1;
 	
 	//first stage, y'>-1
-	std::vector<int> endpoints;
+	IntList endpoints;
+	IntList_init(&endpoints,4);
 	while (stoppingX2>=stoppingY2) {
-		endpoints.clear();
+		IntList_clear(&endpoints);
 		if (-xa2>=xx0 && -xa2<=xx1) {
-			endpoints.push_back(-xa2);
+			IntList_append(&endpoints,-xa2);
 		} 
 		if (-xa1>=xx0 && -xa1<=xx1) {
-			endpoints.push_back(-xa1);
+			IntList_append(&endpoints,-xa1);
 		} 
 		if (xa1>=xx0 && xa1<=xx1) {
-			endpoints.push_back(xa1);
+			IntList_append(&endpoints,xa1);
 		} 
 		if (xa2>=xx0 && xa2<=xx1) {
-			endpoints.push_back(xa2);
+			IntList_append(&endpoints,xa2);
 		} 
 		if (-xa2<xx0 && xx0<=-xa1)
-			endpoints.push_back(xx0);
+			IntList_append(&endpoints,xx0);
 		else if (xa1<xx0 && xx0<=xa2)
-			endpoints.push_back(xx0);
+			IntList_append(&endpoints,xx0);
 		if (-xa2<=xx1 && xx1<-xa1)
-			endpoints.push_back(xx1);
+			IntList_append(&endpoints,xx1);
 		else if (xa1<=xx1 && xx1<xa2)
-			endpoints.push_back(xx1);
-		std::sort(endpoints.begin(),endpoints.end());
-		for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-			doDrawFillLineH(dst, cx+endpoints[i],cx+endpoints[i+1], cy-ya, color);
+			IntList_append(&endpoints,xx1);
+		IntList_sort(&endpoints);
+		for (int i=0;i+1<endpoints.size;i+=2) {
+			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy-ya, color);
 		}
 		ya+=1;
 		if (stoppingX1>=stoppingY1) {
@@ -1775,60 +1790,60 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	bool l0_at_left = (dx0==0) || xi0>0;
 	bool l1_at_left = (dx1==0) || xi1>0;
 	while (stoppingX2<=stoppingY2) {
-		endpoints.clear();
+		IntList_clear(&endpoints);
 		if (l0_at_left ) {
 			if (ya1>=yy1 && ya1<=yy0) {
-				endpoints.push_back(ya1);
+				IntList_append(&endpoints,ya1);
 			} 
 			if (ya2>=yy1 && ya2<=yy0) {
-				endpoints.push_back(ya2);
+				IntList_append(&endpoints,ya2);
 			} 
 			if (ya1<yy0 && yy0<=ya2)
-				endpoints.push_back(yy0);
+				IntList_append(&endpoints,yy0);
 			if (ya1<=yy1 && yy1<ya2)
-				endpoints.push_back(yy1);	
-			std::sort(endpoints.begin(),endpoints.end());
-			for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-				doDrawFillLineV(dst, cx+xa,cy-endpoints[i],cy-endpoints[i+1], color);
+				IntList_append(&endpoints,yy1);	
+			IntList_sort(&endpoints);
+			for (int i=0;i+1<endpoints.size;i+=2) {
+				doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 			}			
 		} else {
 			if (!l1_at_left) {
 				if (ya1>=yy0 && ya1<=yy1) {
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				} 
 				if (ya2>=yy0 && ya2<=yy1) {
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				} 
 				if (ya1<=yy0 && yy0<ya2)
-					endpoints.push_back(yy0);
+					IntList_append(&endpoints,yy0);
 				if (ya1<yy1 && yy1<=ya2)
-					endpoints.push_back(yy1);	
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy-endpoints[i],cy-endpoints[i+1], color);
+					IntList_append(&endpoints,yy1);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				} 
 			} else {
-				endpoints.clear();
+				IntList_clear(&endpoints);
 				if (ya1>=yy0)
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				if (ya2>=yy0)
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				if (ya1<=yy0 && yy0<ya2)
-					endpoints.push_back(yy0);
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy-endpoints[i],cy-endpoints[i+1], color);
+					IntList_append(&endpoints,yy0);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				} 
-				endpoints.clear();
+				IntList_clear(&endpoints);
 				if (ya1>=yy1)
-					endpoints.push_back(ya1);
+					IntList_append(&endpoints,ya1);
 				if (ya2>=yy1)
-					endpoints.push_back(ya2);
+					IntList_append(&endpoints,ya2);
 				if (ya1<=yy1 && yy1<ya2)
-					endpoints.push_back(yy1);
-				std::sort(endpoints.begin(),endpoints.end());
-				for (int i=0;i<(int)endpoints.size()-1;i+=2) {
-					doDrawFillLineV(dst, cx+xa,cy-endpoints[i],cy-endpoints[i+1], color);
+					IntList_append(&endpoints,yy1);
+				IntList_sort(&endpoints);
+				for (int i=0;i+1<endpoints.size;i+=2) {
+					doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				} 
 			}			
 		} 
@@ -1870,6 +1885,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 			}
 		}
 	}		
+	IntList_free(&endpoints);
 }
 
 void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
