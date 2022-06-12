@@ -1,3 +1,4 @@
+#include <raylib.h>
 #include "../src/rdrawing.h"
 #include <time.h>
 
@@ -11,7 +12,8 @@ Image genShrinkImage3();
 Image genShrinkImage4();
 
 int main() {
-	InitWindow(800,600,"Doramon");
+	InitWindow(800,600,"Doraemon");
+	InitAudioDevice();
 	SetTraceLogLevel(LOG_WARNING);
 	SetTargetFPS(30);
 	
@@ -100,7 +102,7 @@ Image genBodyImage(){
 	ImageFillCircleEx(&img, 400, 208, 15, fillColor);
 	
 	ImageDrawLineEx(&img,400,223,400,296,1,color);		// 人中
-	ImageDrawArcEx(&img,400, 192, 108, 108, PI * 1 / 4, PI * 3 / 4,1,color);	// 嘴
+	ImageDrawArcEx(&img,400, 192, 108, 108, PI * 5 / 4, PI * 7 / 4,1,color);	// 嘴
 	
 	ImageDrawLineEx(&img,358, 227, 310, 209,1,color);							// 胡子
 	ImageDrawLineEx(&img,442, 227, 490, 209,1,color);
@@ -118,7 +120,7 @@ Image genBodyImage(){
 	
 	ImageDrawLineEx(&img, 304, 385, 304, 478,1,color);					// 腿外侧
 	ImageDrawLineEx(&img, 496, 385, 496, 478,1,color);
-	ImageDrawArcEx(&img, 400, 479, 15,11,PI,2*PI,1,color);				// 腿内侧
+	ImageDrawArcEx(&img, 400, 479, 15,11,0,PI,1,color);				// 腿内侧
 	
 	fillColor=WHITE;						// 手
 	ImageFillCircleEx(&img, 260,399,27, fillColor);
@@ -137,7 +139,7 @@ Image genBodyImage(){
 	ImageFillCircleEx(&img,400,381,75,fillColor);
 	ImageFillRectangleEx(&img,340,304,120,20,fillColor); // 用白色矩形擦掉多余的肚皮
 	
-	ImageDrawSectorEx(&img,400,381,58, 58,0,PI,1,color); // 口袋 
+	ImageDrawSectorEx(&img,400,381,58, 58,PI,2*PI,1,color); // 口袋 
 	
 	// 画铃铛
 	fillColor=(Color){169, 38, 0,255};				// 绳子

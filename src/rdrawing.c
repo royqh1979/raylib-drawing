@@ -1130,7 +1130,7 @@ static void doFillSector1(Image* dst, int cx, int cy, int radiusX, int radiusY, 
 		else
 			tx1=xa;
 		if (tx0<tx1)
-			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);
+			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);
 		//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
 		ya+=1;
 		stoppingY += twoASquare;
@@ -1185,7 +1185,7 @@ static void doFillSector1(Image* dst, int cx, int cy, int radiusX, int radiusY, 
 				tx1=xa;
 			if (! (bothSide && (ya>y2 && ya>y1))) {
 				//				if (tx0<tx1)
-				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);	
+				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);	
 				//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
 			}			
 			ya-=1;
@@ -1281,7 +1281,7 @@ static void doFillSector2(Image* dst, int cx, int cy, int radiusX,int radiusY, f
 		else
 			tx1=xa;
 		if (tx0<tx1)
-			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);
+			doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);
 		//		TraceLog(LOG_WARNING,"State 1: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);
 		ya+=1;
 		stoppingY += twoASquare;
@@ -1336,7 +1336,7 @@ static void doFillSector2(Image* dst, int cx, int cy, int radiusX,int radiusY, f
 				tx1=xa;
 			if (! (bothSide && (ya>y2 && ya>y1))) {
 				//				if (tx0<tx1)
-				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy-ya,fillColor);	
+				doDrawFillLineH(dst,cx+tx0,cx+tx1,cy+ya,fillColor);	
 				//				TraceLog(LOG_WARNING,"State 2: %d,%d,%d,%d,%d,%d",tx0,tx1,xx0,xx1,-xa,xa);				
 			}			
 			ya-=1;
@@ -1490,7 +1490,7 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 			IntList_append(&endpoints,xx1);
 		IntList_sort(&endpoints);
 		for (int i=0;i+1<endpoints.size;i+=2) {
-			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy+ya, color);
+			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy-ya, color);
 		}
 		ya+=1;
 		if (stoppingX1>=stoppingY1) {
@@ -1569,7 +1569,7 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 				IntList_append(&endpoints,yy1);
 			IntList_sort(&endpoints);
 			for (int i=0;i+1<endpoints.size;i+=2) {
-				doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
+				doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 			}			
 		} else {
 			if (!l1_at_left) {
@@ -1585,7 +1585,7 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy1);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				} 
 			} else {
 				IntList_clear(&endpoints);
@@ -1597,7 +1597,7 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy0);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				}
 				IntList_clear(&endpoints);
 				if (ya1>=yy1)
@@ -1608,7 +1608,7 @@ static void doDrawArc1(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy1);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
 				} 
 			}			
 		} 
@@ -1748,7 +1748,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 			IntList_append(&endpoints,xx1);
 		IntList_sort(&endpoints);
 		for (int i=0;i+1<endpoints.size;i+=2) {
-			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy-ya, color);
+			doDrawFillLineH(dst, cx+endpoints.edges[i],cx+endpoints.edges[i+1], cy+ya, color);
 		}
 		ya+=1;
 		if (stoppingX1>=stoppingY1) {
@@ -1827,7 +1827,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 				IntList_append(&endpoints,yy1);	
 			IntList_sort(&endpoints);
 			for (int i=0;i+1<endpoints.size;i+=2) {
-				doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
+				doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 			}			
 		} else {
 			if (!l1_at_left) {
@@ -1843,7 +1843,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy1);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 				} 
 			} else {
 				IntList_clear(&endpoints);
@@ -1855,7 +1855,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy0);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx-xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx-xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 				} 
 				IntList_clear(&endpoints);
 				if (ya1>=yy1)
@@ -1866,7 +1866,7 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 					IntList_append(&endpoints,yy1);
 				IntList_sort(&endpoints);
 				for (int i=0;i+1<endpoints.size;i+=2) {
-					doDrawFillLineV(dst, cx+xa,cy-endpoints.edges[i],cy-endpoints.edges[i+1], color);
+					doDrawFillLineV(dst, cx+xa,cy+endpoints.edges[i],cy+endpoints.edges[i+1], color);
 				} 
 			}			
 		} 
