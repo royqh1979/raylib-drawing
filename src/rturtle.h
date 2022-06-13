@@ -2,7 +2,6 @@
 #define RTURTLE_H
 
 #include <raylib.h>
-#include "utils.h"
 #include "rdrawing.h"
 
 /**

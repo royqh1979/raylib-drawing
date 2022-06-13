@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "rturtle.h"
 #include "string.h"
 #include <stdlib.h>
