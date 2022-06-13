@@ -11,7 +11,7 @@ set(rturtle_public_headers
     )
 
 set(rturtle_sources
-    rturtle.cpp
+    rturtle.c
     )
 
 set(rdrawing_public_headers
@@ -19,7 +19,7 @@ set(rdrawing_public_headers
     )
 
 set(rdrawing_sources
-    rdrawing.cpp
+    rdrawing.c
     )
 
 add_library(rturtle ${rturtle_sources} ${rturtle_public_headers} ${rdrawing_public_headers})
