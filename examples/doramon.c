@@ -2,7 +2,7 @@
 #include "../src/rdrawing.h"
 #include <time.h>
 
-#define FRAMES 2
+#define SHRINK_FRAMES 2
 
 Image genBodyImage();
 Image genShrinkImage0();
@@ -18,7 +18,7 @@ int main() {
 	SetTargetFPS(30);
 	
 	SetRandomSeed(time(NULL));
-
+	
 	Image img=genBodyImage();
 	Image shrinkImages[9];
 	shrinkImages[0]=genShrinkImage0();
@@ -46,7 +46,7 @@ int main() {
 		}
 		int idx=0;
 		if (stage>=0) {
-			idx=stage / FRAMES;
+			idx=stage / SHRINK_FRAMES;
 			if (idx<9) {
 				shrinkTexture=LoadTextureFromImage(shrinkImages[idx]);	
 			} else {
@@ -109,8 +109,7 @@ Image genBodyImage(){
 	ImageDrawLineEx(&img,359, 235, 308, 235,1,color);
 	ImageDrawLineEx(&img,441, 235, 492, 235,1,color);
 	ImageDrawLineEx(&img,358, 243, 310, 261,1,color);
-	ImageDrawLineEx(&img,442, 243, 490, 261,1,color);
-	
+	ImageDrawLineEx(&img,442, 243, 490, 261,1,color);	
 	
 	// 画身体
 	ImageDrawLineEx(&img, 319, 332, 262, 372,1,color);					// 手臂(上)

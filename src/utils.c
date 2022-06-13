@@ -201,14 +201,14 @@ void PolyEdgeList_sort_by_x(PolyEdgeList* list){
 void IntList_init(IntList* list, int capacity){
 	list->capacity=capacity;
 	list->size=0;
-	list->edges=(int*)malloc(sizeof(int)*capacity);
+	list->datas=(int*)malloc(sizeof(int)*capacity);
 }
 void IntList_append(IntList* list, int data) {
-	list->edges[list->size]=data;
+	list->datas[list->size]=data;
 	list->size++;	
 }
 void IntList_remove(IntList* list, int i) {
-	list->edges[i]=list->edges[list->size-1];
+	list->datas[i]=list->datas[list->size-1];
 	list->size--;
 }
 void IntList_clear(IntList* list){
@@ -217,8 +217,8 @@ void IntList_clear(IntList* list){
 void IntList_free(IntList* list){
 	list->size=0;
 	list->capacity=0;
-	free(list->edges);
-	list->edges=NULL;
+	free(list->datas);
+	list->datas=NULL;
 }
 
 static int _compare_int(const void * p1, const void * p2) {
@@ -228,5 +228,5 @@ static int _compare_int(const void * p1, const void * p2) {
 }
 
 void IntList_sort(IntList *list){
-	qsort(list->edges,list->size,sizeof(int), _compare_int);	
+	qsort(list->datas,list->size,sizeof(int), _compare_int);	
 }

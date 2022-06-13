@@ -50,7 +50,7 @@ extern "C" {            // Prevents name mangling of functions
 	typedef struct {
 		int size;
 		int capacity;
-		int* edges;		
+		int* datas;		
 	} IntList;
 	
 	void IntQueue_init(IntQueue* queue);
