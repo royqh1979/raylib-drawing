@@ -124,9 +124,28 @@
 #define	WHITESMOKE             CLITERAL(Color){ 0xF5, 0xF5, 0xF5, 255 }  
 #define	YELLOWGREEN            CLITERAL(Color){ 0x9A, 0xCD, 0x32, 255 }  
 
+typedef enum ImageFontType {
+	imfTrueType
+} ImageFontType;
+
+typedef struct ImageFont {
+	int baseSize;           // Base size (default chars height)
+	int ascent;
+	int descent;
+	int lineGap;
+	int glyphPadding;       // Padding around the glyph characters
+	ImageFontType fontType;
+	void* fontInfo;
+	const unsigned char *data;
+} ImageFont;
+
 #if defined(__cplusplus)
 extern "C" {            // Prevents name mangling of functions
 #endif
+	ImageFont ImageLoadFont(const char *fileName, int fontSize);  // Load font from file with extended parameters
+	ImageFont ImageLoadFontFromMemory(const char *fileType, const unsigned char *fileData, int dataSize, int fontSize); // Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
+	
+	Image ImageDrawText2(ImageFont font, const char *text, int x, int y, float fontSize, float spacing, Color color);
 
 	void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color);
 	void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color);

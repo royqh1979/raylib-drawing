@@ -1,9 +1,13 @@
 #include "rdrawing.h"
 #include "utils.h"
+#include "external/stb_truetype.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
 
+#ifndef FONT_TTF_DEFAULT_CHARS_PADDING
+#define FONT_TTF_DEFAULT_CHARS_PADDING   4      // TTF font generation default chars padding
+#endif
 #define COLOR_EQUAL(col1, col2) ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -1962,6 +1966,73 @@ void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	ImageDrawLineEx(dst,cx,cy,cx+x1,cy+y1,lineWidth,color);
 	if (x1!=x2 || y1!=y2)
 		ImageDrawLineEx(dst,cx,cy,cx+x2,cy+y2,lineWidth,color);
+}
+
+// Load font from memory buffer, fileType refers to extension: i.e. ".ttf"
+ImageFont ImageLoadFontFromMemory(const char *fileType, const unsigned char *fileData, int dataSize, int fontSize)
+{
+	ImageFont font = { 0 };
+	
+	char fileExtLower[16] = { 0 };
+	strcpy(fileExtLower, TextToLower(fileType));
+	
+	font.data = fileData;
+	if (TextIsEqual(fileExtLower, ".ttf") ||
+		TextIsEqual(fileExtLower, ".otf"))
+	{
+		font.baseSize = fontSize;
+		font.fontType = imfTrueType;
+		font.glyphPadding = 0;
+		font.fontInfo=NULL;
+		
+		if (fileData != NULL)
+		{
+			bool genFontChars = false;
+			font.fontInfo = RL_MALLOC(sizeof(stbtt_fontinfo));
+			stbtt_fontinfo* fontInfo = (stbtt_fontinfo*)font.fontInfo;
+			
+			if (stbtt_InitFont(fontInfo, (unsigned char *)fileData, 0))     // Initialize font for data reading
+			{
+				// Calculate font scale factor
+				float scaleFactor = stbtt_ScaleForPixelHeight(fontInfo, (float)fontSize);
+				
+				// Calculate font basic metrics
+				// NOTE: ascent is equivalent to font baseline
+				stbtt_GetFontVMetrics(fontInfo, &(font.ascent), &(font.descent), &(font.lineGap));
+				font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
+			} else {
+				RL_FREE(font.fontInfo);
+				font.fontInfo=NULL;
+				TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
+				goto ImageLoadFontFromMemory_EXIT;
+			}
+		} else {
+			TRACELOG(LOG_WARNING, "FONT: Empty TTF font data");			
+			goto ImageLoadFontFromMemory_EXIT;
+		}
+	} else {
+		TRACELOG(LOG_INFO, "FONT: Only support otf/ttf fonts");		
+	} 
+ImageLoadFontFromMemory_EXIT:	
+	return font;
+}
+
+// Load Font from TTF font file with generation parameters
+// NOTE: You can pass an array with desired characters, those characters should be available in the font
+// if array is NULL, default char set is selected 32..126
+ImageFont ImageLoadFont(const char *fileName, int fontSize)
+{
+	ImageFont font = { 0 };
+	
+	// Loading file to memory
+	unsigned int fileSize = 0;
+	unsigned char *fileData = LoadFileData(fileName, &fileSize);
+	if (fileData != NULL)
+	{
+		// Loading font from memory data
+		font = ImageLoadFontFromMemory(GetFileExtension(fileName), fileData, fileSize, fontSize);
+	}	
+	return font;
 }
 
 
