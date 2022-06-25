@@ -2035,4 +2035,62 @@ ImageFont ImageLoadFont(const char *fileName, int fontSize)
 	return font;
 }
 
-
+Image ImageDrawText2(ImageFont font, const char *text, int x, int y, float fontSize, float spacing, Color color) {
+	Image imText = { 0 };
+	int size = (int)strlen(text);   // Get size in bytes of text
+	
+	int textOffsetX = 0;            // Image drawing position X
+	int textOffsetY = 0;            // Offset between lines (on line break '\n')
+	
+	// NOTE: Text image is generated at font base size, later scaled to desired font size
+	Vector2 imSize = MeasureTextEx(font, text, (float)font.baseSize, spacing);  // WARNING: Module required: rtext
+	
+	// Create image to store text
+	imText = GenImageColor((int)imSize.x, (int)imSize.y, BLANK);
+	
+	for (int i = 0; i < size; i++)
+	{
+		// Get next codepoint from byte string and glyph index in font
+		int codepointByteCount = 0;
+		int codepoint = GetCodepoint(&text[i], &codepointByteCount);    // WARNING: Module required: rtext
+		int index = GetGlyphIndex(font, codepoint);                     // WARNING: Module required: rtext
+		
+		// NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
+		// but we need to draw all of the bad bytes using the '?' symbol moving one byte
+		if (codepoint == 0x3f) codepointByteCount = 1;
+		
+		if (codepoint == '\n')
+		{
+			// NOTE: Fixed line spacing of 1.5 line-height
+			// TODO: Support custom line spacing defined by user
+			textOffsetY += (font.baseSize + font.baseSize/2);
+			textOffsetX = 0;
+		}
+		else
+		{
+			if ((codepoint != ' ') && (codepoint != '\t'))
+			{
+				Rectangle rec = { (float)(textOffsetX + font.glyphs[index].offsetX), (float)(textOffsetY + font.glyphs[index].offsetY), (float)font.recs[index].width, (float)font.recs[index].height };
+				ImageDraw(&imText, font.glyphs[index].image, (Rectangle){ 0, 0, (float)font.glyphs[index].image.width, (float)font.glyphs[index].image.height }, rec, tint);
+			}
+			
+			if (font.glyphs[index].advanceX == 0) textOffsetX += (int)(font.recs[index].width + spacing);
+			else textOffsetX += font.glyphs[index].advanceX + (int)spacing;
+		}
+		
+		i += (codepointByteCount - 1);   // Move text bytes counter to next codepoint
+	}
+	
+	// Scale image depending on text size
+	if (fontSize > imSize.y)
+	{
+		float scaleFactor = fontSize/imSize.y;
+		TRACELOG(LOG_INFO, "IMAGE: Text scaled by factor: %f", scaleFactor);
+		
+		// Using nearest-neighbor scaling algorithm for default font
+		// WARNING: Module required: rtext
+		if (font.texture.id == GetFontDefault().texture.id) ImageResizeNN(&imText, (int)(imSize.x*scaleFactor), (int)(imSize.y*scaleFactor));
+		else ImageResize(&imText, (int)(imSize.x*scaleFactor), (int)(imSize.y*scaleFactor));
+	}
+	return imText;
+}
