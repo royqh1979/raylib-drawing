@@ -4,7 +4,15 @@ int main() {
 	TurtleState ts;
     initWorld(800,600);
 	
-    setSpeed(500);
+	setPenSize(20);
+	
+    setSpeed(100);
+	
+//	lt(1);
+//	for(int i=0;i<4;i++) {
+//		fd(150);
+//		lt(90);
+//	}	
 	fillEllipse(100,100,20,40,RED);
 	
 	drawEllipse(50,50,150,250);
@@ -27,9 +35,9 @@ int main() {
 	setState(ts);
 	pd();
     waitClick();
-	clearScreen();
-    hide();
-    waitClick();
+	fd(100);
+	clear();
+    waitClose();
     return 0;
 }
 

@@ -92,9 +92,9 @@ int main() {
 	for (int i=0;i<=12;i++) {
 		for (int j=0;j<=12;j++) {
 			ImageFillSectorEx(&img,j*50+25,i*50+25,16,24,i*PI/6,j*PI/6,DARKCYAN);
-			ImageDrawArcEx(&img,j*50+25,i*50+25,16,24,i*PI/6,j*PI/6,3,DARKRED);
+			ImageDrawSectorEx(&img,j*50+25,i*50+25,16,24,i*PI/6,j*PI/6,3,DARKRED);
 			ImageFillSectorEx(&img,650+j*50+25,i*50+25,16,24,i*PI/6,-j*PI/6,DARKCYAN);
-			ImageDrawArcEx(&img,650+j*50+25,i*50+25,16,24,i*PI/6,-j*PI/6,3,DARKRED);
+			ImageDrawSectorEx(&img,650+j*50+25,i*50+25,16,24,i*PI/6,-j*PI/6,3,DARKRED);
 		}
 	}
 	

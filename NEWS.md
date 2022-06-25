@@ -1,4 +1,17 @@
+rdrawing 1.1£º
+
+  - enhancement: add enum ImageJoinStyle and ImageSetJoinStyle() ImageGetJoinStyle() functions
+  - fix: ImageDrawSectorEx error
+  - fix: ImageFillTriangleEx dead lock, when three vertices are on the same vertical line
+  - fix: ImageDrawLineEx error, when length of line is shorter than line width
+
+rturtle 1.1:
+
+  - change: clear() don't reset turtle to it's origin
+  - enhancement: add waitClose()
+  - fix: truncation error not correctly handled in fd()
+
 rturtle 1.0
 rdrawing 1.0
 
- - init
+ - initial release

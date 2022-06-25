@@ -8,6 +8,8 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
+static ImageJoinStyle _default_image_join_style = IMAGE_JOIN_ROUND;
+
 static void swapInt(int* p1, int*p2) {
 	int t = *p2;
 	*p2 = *p1;
@@ -181,11 +183,42 @@ static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int line
 } 
 
 void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
-	if (abs(y1-y0)<abs(x1-x0)) {
-		doDrawLineLow(dst,x0,y0,x1,y1,lineWidth,color);
-	} else {
-		doDrawLineHigh(dst,x0,y0,x1,y1,lineWidth, color);
-	}	
+	if (lineWidth==1) {
+		ImageDrawLine(dst,x0,y0,x1,y1,color);
+		return;
+	}
+//	if (abs(y1-y0)<abs(x1-x0)) {
+//		doDrawLineLow(dst,x0,y0,x1,y1,lineWidth,color);
+//	} else {
+//		doDrawLineHigh(dst,x0,y0,x1,y1,lineWidth, color);
+//	}	
+	if (x0==x1 && y0==y1)
+		return;
+	if (lineWidth<1)
+		return;
+	int vx[4];
+	int vy[4];
+	if (x0>x1) {
+		swapInt(&x0,&x1);
+		swapInt(&y0,&y1);
+	}
+	int dx = x1-x0;
+	int dy = y0-y1;
+	float wx = lineWidth * dy / sqrt(dx*dx+dy*dy) / 2;
+	float wy = lineWidth * dx / sqrt(dx*dx+dy*dy) / 2;
+	vx[0]=x0-wx;
+	vy[0]=y0-wy;
+	vx[1]=x0+wx;
+	vy[1]=y0+wy;
+	vx[2]=x1+wx;
+	vy[2]=y1+wy;
+	vx[3]=x1-wx;
+	vy[3]=y1-wy;	
+	ImageFillPolygonEx(dst,vx,vy,4,color);
+	if (_default_image_join_style==IMAGE_JOIN_ROUND) {
+		ImageDrawPointEx(dst,x0,y0,lineWidth,color);
+		ImageDrawPointEx(dst,x1,y1,lineWidth,color);
+	}
 }
 
 static void draw4EllipseBordersH(Image* dst,int CX, int CY, int X1, int X2, int Y, Color color) {
@@ -455,6 +488,8 @@ void ImageFillEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, Co
 }
 
 void ImageFillCircleEx(Image* dst, int cx, int cy, int radius, Color fillColor){
+	if (radius<1)
+		return;
 	int twoSquare=2*radius*radius;
 	int x=radius;
 	int y=0;
@@ -819,12 +854,12 @@ void ImageFillTriangleEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int
 	for (int y=y0;y<y1;y++) {
 		doDrawFillLineH(dst,xx0,xx2,y,fillColor);
 		C0+=dx0;
-		while (C0>=dy0) {
+		while (C0>=dy0 && dy0!=0) {
 			xx0+=xi0;
 			C0-=dy0;
 		}
 		C2+=dx2;
-		while (C2>=dy2) {
+		while (C2>=dy2 && dy2!=0) {
 			xx2+=xi2;
 			C2-=dy2;
 		}
@@ -834,12 +869,12 @@ void ImageFillTriangleEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int
 	for (int y=y1;y<y2;y++) {
 		doDrawFillLineH(dst,xx0,xx1,y,fillColor);
 		C0+=dx0;
-		while (C0>=dy0) {
+		while (C0>=dy0 && dy0!=0) {
 			xx0+=xi0;
 			C0-=dy0;
 		}
 		C1+=dx1;
-		while (C1>=dy1) {
+		while (C1>=dy1 && dy1!=0) {
 			xx1+=xi1;
 			C1-=dy1;
 		}
@@ -1947,6 +1982,18 @@ void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float be
 			doDrawArc2(dst,cx,cy,radiusX,radiusY,PI,endAngle,lineWidth, color);
 		}
 	}
+	if (_default_image_join_style==IMAGE_JOIN_ROUND) {
+		float a = radiusX;
+		float b = radiusY;
+		float r1=a*b/sqrt(pow(b*cos(beginAngle),2)+pow(a*sin(beginAngle),2));
+		int x1=cx+round(r1*cos(beginAngle));
+		int y1=cy-round(r1*sin(beginAngle));
+		float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
+		int x2=cx+round(r2*cos(endAngle));
+		int y2=cy-round(r2*sin(endAngle));
+		ImageDrawPointEx(dst,x2,y2,lineWidth,color);
+		ImageDrawPointEx(dst,x1,y1,lineWidth,color);
+	}
 }
 
 void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, int lineWidth, Color color) {
@@ -1959,9 +2006,15 @@ void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
-	ImageDrawLineEx(dst,cx,cy,cx+x1,cy+y1,lineWidth,color);
+	ImageDrawLineEx(dst,cx,cy,cx+x1,cy-y1,lineWidth,color);
 	if (x1!=x2 || y1!=y2)
-		ImageDrawLineEx(dst,cx,cy,cx+x2,cy+y2,lineWidth,color);
+		ImageDrawLineEx(dst,cx,cy,cx+x2,cy-y2,lineWidth,color);
 }
 
+void ImageSetJoinStyle(ImageJoinStyle style) {
+	_default_image_join_style = style;
+}
 
+ImageJoinStyle ImageGetJoinStyle() {
+	return _default_image_join_style;
+}

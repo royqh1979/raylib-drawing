@@ -122,12 +122,21 @@
 #define	TURQUOISE              CLITERAL(Color){ 0x40, 0xE0, 0xD0, 255 }  
 #define	WHEAT                  CLITERAL(Color){ 0xF5, 0xDE, 0xB3, 255 }  
 #define	WHITESMOKE             CLITERAL(Color){ 0xF5, 0xF5, 0xF5, 255 }  
-#define	YELLOWGREEN            CLITERAL(Color){ 0x9A, 0xCD, 0x32, 255 }  
+#define	YELLOWGREEN            CLITERAL(Color){ 0x9A, 0xCD, 0x32, 255 }
+
+
+typedef enum ImageJoinStyle {
+	IMAGE_JOIN_ROUND,
+	IMAGE_JOIN_BEVEL	
+}ImageJoinStyle;
 
 #if defined(__cplusplus)
 extern "C" {            // Prevents name mangling of functions
 #endif
-
+	
+	void ImageSetJoinStyle(ImageJoinStyle style);
+	ImageJoinStyle ImageGetJoinStyle();
+	
 	void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color);
 	void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color);
 	void ImageDrawEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, int lineWidth, Color color);

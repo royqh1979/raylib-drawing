@@ -35,12 +35,13 @@ extern "C" {            // Prevents name mangling of functions
 	void rt(double degree);
 	void rightTurn(double degree);
 	void cs();
-	void clear();
 	void clearScreen();
+	void clear();
 	void home();
 	
 	//pause() is defined in linux (unistd.h)
 	void waitClick();
+	void waitClose();
 	
 	void pd();
 	void pu();

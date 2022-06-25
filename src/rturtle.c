@@ -2100,7 +2100,7 @@ static void prepareTurtleOriginIcon()
 
 
 static void doDrawLineF(float x0, float y0, float x1, float y1) {
-	ImageDrawLineEx(&pWorld->world_image,x0,y0,x1,y1,pTurtle->pen_size,pTurtle->pen_color);
+	ImageDrawLineEx(&pWorld->world_image,round(x0),round(y0),round(x1),round(y1),pTurtle->pen_size,pTurtle->pen_color);
 }
 
 void drawLine(int x0, int y0, int x1, int y1) {
@@ -2182,6 +2182,16 @@ void waitClick() {
 		displayWorld();
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 			break;
+		usleep(100000);
+	}
+}
+
+void waitClose() {
+	if (pWorld==NULL)
+		return;
+	while(!pWorld->window_should_close) {
+		interactWithUser();
+		displayWorld();
 		usleep(100000);
 	}
 }
@@ -2406,7 +2416,13 @@ void cs()
 }
 void clear()
 {
-	clearScreen();
+	if (pWorld==NULL)
+		return;
+	if (pWorld->window_should_close)
+		return;
+	ImageClearBackground(&pWorld->world_image,BLANK);
+
+	refreshWorld();
 }
 
 void home()

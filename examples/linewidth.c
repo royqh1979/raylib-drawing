@@ -8,9 +8,11 @@ void genLine(Image* img) {
 	x2=GetRandomValue(200,600);
 	y2=GetRandomValue(100,500);
 	ImageClearBackground(img,WHITE);
-	ImageDrawPointEx(img,x1,y1,50,DARKCYAN);
-	ImageDrawPointEx(img,x2,y2,50,DARKCYAN);
-	ImageDrawLineEx(img,x1,y1,x2,y2,50,BLACK);	
+	//ImageDrawPointEx(img,x1,y1,50,DARKCYAN);
+	//ImageDrawPointEx(img,x2,y2,50,DARKCYAN);
+	ImageDrawLineEx(img,x1,y1,x2,y2,2,BLACK);
+//	ImageDrawArcEx(img,x1,y1,200,200,PI/3,2*PI/3,25,RED);
+//	ImageDrawLineEx(img,399,299,400,298,20,RED);
 }
 
 int main() {

@@ -37,6 +37,8 @@ StaticLink = 0
 AddCharset = 1
 Encoding = AUTO
 ModelType = 0
+Bins = 
+ExecEncoding = SYSTEM
 
 
 [VersionInfo]
