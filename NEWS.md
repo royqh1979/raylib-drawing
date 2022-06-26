@@ -4,6 +4,7 @@ rdrawing 1.1£º
   - fix: ImageDrawSectorEx error
   - fix: ImageFillTriangleEx dead lock, when three vertices are on the same vertical line
   - fix: ImageDrawLineEx error, when length of line is shorter than line width
+  - enhancement: add setAutoUpdateWorld()/updateWorld()/waitMilliseconds() functions
 
 rturtle 1.1:
 

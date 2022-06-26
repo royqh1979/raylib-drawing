@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#include <sys/time.h>
 
 #define BASE_STEP 1
 
@@ -32,6 +33,7 @@ typedef struct
 	Color back_color;
 	bool is_rewind;
 	bool is_immediate;
+	bool is_auto_update;
 	Image world_image;
 	Texture2D background;
 	bool use_background_image;
@@ -116,24 +118,37 @@ static void interactWithUser() {
 		captureScreen(); 
 	} 
 }
+
+
 static void refreshWorld()
 {
+	if (!pWorld || !(pWorld->is_auto_update)) {
+		return;
+	}
 	interactWithUser();
 	pWorld->frame_count++;
 	pWorld->frame_count%=pTurtle->move_speed;
-	if (pTurtle->move_speed>1000)
-	{
+	if (pTurtle->move_speed>100000) {
+		int s=pTurtle->move_speed/10000;
+		if (pWorld->frame_count%s!=1)
+		{
+			return; //skip frame
+		}
+	} else if (pTurtle->move_speed>1000) {
 		int s=pTurtle->move_speed/100;
 		if (pWorld->frame_count%s!=1)
 		{
 			return; //skip frame
 		}
 		usleep(1000);
-	}
-	else
-	{
+	} else {
 		usleep(500000/pTurtle->move_speed);
 	}
+	displayWorld();
+}
+
+void updateWorld() {
+	interactWithUser();
 	displayWorld();
 }
 
@@ -2133,6 +2148,7 @@ void initWorld(int width,int height){
 	pWorld->back_color = WHITE;
 	pWorld->is_rewind = false;
 	pWorld->is_immediate = false;
+	pWorld->is_auto_update = true;
 	pWorld->origin_x = width/2;
 	pWorld->origin_y = height/2;
 	pWorld->use_background_image = false;
@@ -2155,6 +2171,18 @@ void initWorld(int width,int height){
 	
 	pWorld->world_image = GenImageColor(width,height,BLANK);
 	createGrids(100,1,20,DARKRED,DARKCYAN);
+}
+
+void setAutoUpdateWorld(bool isAutoUpdate){
+	if (pWorld==NULL)
+		return;
+	pWorld->is_auto_update=isAutoUpdate;
+}
+
+bool isAutoUpdateWorld() {
+	if (pWorld==NULL)
+		return false;
+	return pWorld->is_auto_update;	
 }
 
 void closeWorld(){
@@ -2193,6 +2221,25 @@ void waitClose() {
 		interactWithUser();
 		displayWorld();
 		usleep(100000);
+	}
+}
+
+void waitMilliseconds(int ms) {
+	if (pWorld==NULL)
+		return;
+	struct timeval begin, end;
+	gettimeofday(&begin, 0);
+	displayWorld();
+	
+	while(!pWorld->window_should_close) {
+		interactWithUser();
+		gettimeofday(&end, 0);
+		long seconds = end.tv_sec - begin.tv_sec;
+		long microseconds = end.tv_usec - begin.tv_usec;
+		long milliseconds = seconds*1000+microseconds/1000;
+		if (milliseconds>=ms)
+			return;
+		usleep(1000);
 	}
 }
 

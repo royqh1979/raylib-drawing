@@ -42,6 +42,7 @@ extern "C" {            // Prevents name mangling of functions
 	//pause() is defined in linux (unistd.h)
 	void waitClick();
 	void waitClose();
+	void waitMilliseconds(int ms);
 	
 	void pd();
 	void pu();
@@ -88,6 +89,10 @@ extern "C" {            // Prevents name mangling of functions
 	void setBackgroundColor(Color color);
 	Color getBackgroundColor();
 	
+	void setAutoUpdateWorld(bool isAutoUpdate);
+	bool isAutoUpdateWorld();
+	void updateWorld();
+	
 	void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridColorX, Color gridColorY);
 	void removeGrids();
 	
@@ -99,8 +104,7 @@ extern "C" {            // Prevents name mangling of functions
 	void drawEllipse(int centerX, int centerY, int radiusX, int radiusY);
 	void fillEllipse(int centerX, int centerY, int radiusX, int radiusY, Color fillColor);
 	void fillCircle(int centerX, int centerY, int radius, Color fillColor);
-	void drawCircle(int centerX, int centerY, int radius);
-	
+	void drawCircle(int centerX, int centerY, int radius);	
 	
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
