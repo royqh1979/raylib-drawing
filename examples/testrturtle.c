@@ -56,14 +56,18 @@ int main() {
 		
 		clear();
 		beginFill();
-		while(1) {
-			fd(200);
-			lt(170);
-			int x = round(getX());
-			int y = round(getY());
-			if (x==0 && y==0)
-				break;
-		}
+//		while(1) {
+//			fd(200);
+//			lt(170);
+//			int x = round(getX());
+//			int y = round(getY());
+//			if (x==0 && y==0)
+//				break;
+//		}
+		setXY(100,0);
+		setXY(100,100);
+		setXY(0,100);
+		setXY(0,0);
 		endFill(LIGHTYELLOW);
 		lt(1);
 		waitMilliseconds(1);

@@ -12,6 +12,9 @@ rturtle 1.1:
   - fix: truncation error not correctly handled in fd()
   - add: beginFill() / endFill() / isFilling()
   - enhancement: add setAutoUpdateWorld()/updateWorld()/waitMilliseconds() functions
+  - change: setXY() will leave tracks when pen down
+  - add: setX() / setY()
+  - remove: drawCircle() / fillCircle()
 
 rturtle 1.0
 rdrawing 1.0

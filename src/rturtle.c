@@ -24,6 +24,9 @@ typedef struct
 	double icon_width;
 	double icon_height;
 	bool is_show; //ÊÇ·ñÏÔÊ¾º£¹ê
+	bool is_filling;
+	IntList path_x;
+	IntList path_y;
 } Turtle;
 
 typedef struct
@@ -45,9 +48,6 @@ typedef struct
 	bool hide_grid;
 	bool hide_background_image;
 	Texture2D grids;
-	bool is_filling;
-	IntList path_x;
-	IntList path_y;
 } World;
 
 static World* pWorld = NULL;
@@ -2161,9 +2161,7 @@ void initWorld(int width,int height){
 	pWorld->use_grid = false;
 	pWorld->hide_grid = true;
 	pWorld->hide_background_image = true;
-	pWorld->is_filling = false;
-	memset(&(pWorld->path_x),0,sizeof(IntList));
-	memset(&(pWorld->path_y),0,sizeof(IntList));
+
 	
 	pTurtle=(Turtle*)malloc(sizeof(Turtle));
 	pTurtle->pen_size = 1;
@@ -2175,6 +2173,9 @@ void initWorld(int width,int height){
 	pTurtle->is_show = true;
 	pTurtle->is_pen_down = true;
 	prepareTurtleOriginIcon();
+	pTurtle->is_filling = false;
+	memset(&(pTurtle->path_x),0,sizeof(IntList));
+	memset(&(pTurtle->path_y),0,sizeof(IntList));
 	
 	pWorld->world_image = GenImageColor(width,height,BLANK);
 	createGrids(100,1,20,DARKRED,DARKCYAN);
@@ -2205,8 +2206,8 @@ void closeWorld(){
 	}
 	UnloadTexture(pTurtle->icon);
 	CloseWindow();
-	IntList_free(&(pWorld->path_x));
-	IntList_free(&(pWorld->path_y));
+	IntList_free(&(pTurtle->path_x));
+	IntList_free(&(pTurtle->path_y));
 	free(pWorld);
 	free(pTurtle);
 }
@@ -2353,9 +2354,9 @@ void forward(double step)
 		pTurtle->x=x;
 		pTurtle->y=y;
 	}
-	if (pWorld->is_filling) {
-		IntList_append(&pWorld->path_x,round(pTurtle->x));
-		IntList_append(&pWorld->path_y,round(pTurtle->y));
+	if (pTurtle->is_filling) {
+		IntList_append(&pTurtle->path_x,round(pTurtle->x));
+		IntList_append(&pTurtle->path_y,round(pTurtle->y));
 	}
 	refreshWorld();
 }
@@ -2626,8 +2627,61 @@ void setXY(double x, double y)
 {
 	if (pWorld==NULL)
 		return;
-	pTurtle->x=pWorld->origin_x+x;
-	pTurtle->y=pWorld->origin_y-y;
+	double newX = pWorld->origin_x+x;
+	double newY = pWorld->origin_y-y;
+	if (pTurtle->is_pen_down) {
+		doDrawLineF(
+			pTurtle->x,
+			pTurtle->y,
+			newX,
+			newY);
+	}
+	pTurtle->x=newX;
+	pTurtle->y=newY;
+	if (pTurtle->is_filling) {
+		IntList_append(&pTurtle->path_x,round(pTurtle->x));
+		IntList_append(&pTurtle->path_y,round(pTurtle->y));
+	}
+	refreshWorld();
+}
+
+void setX(double x)
+{
+	if (pWorld==NULL)
+		return;
+	double newX = pWorld->origin_x+x;
+	if (pTurtle->is_pen_down) {
+		doDrawLineF(
+			pTurtle->x,
+			pTurtle->y,
+			newX,
+			pTurtle->y);
+	}
+	pTurtle->x=newX;
+	if (pTurtle->is_filling) {
+		IntList_append(&pTurtle->path_x,round(pTurtle->x));
+		IntList_append(&pTurtle->path_y,round(pTurtle->y));
+	}	
+	refreshWorld();
+}
+
+void setY(double y)
+{
+	if (pWorld==NULL)
+		return;
+	double newY = pWorld->origin_y-y;
+	if (pTurtle->is_pen_down) {
+		doDrawLineF(
+			pTurtle->x,
+			pTurtle->y,
+			pTurtle->x,
+			newY);
+	}
+	pTurtle->y=newY;
+	if (pTurtle->is_filling) {
+		IntList_append(&pTurtle->path_x,round(pTurtle->x));
+		IntList_append(&pTurtle->path_y,round(pTurtle->y));
+	}
 	refreshWorld();
 }
 
@@ -2852,36 +2906,36 @@ void fillEllipse(int centerX, int centerY, int radiusX, int radiuxY, Color fillC
 	refreshWorld();
 }
 
-void fillCircle(int centerX, int centerY, int radius, Color fillColor) {
-	if (pWorld==NULL)
-		return ;
-	if (pWorld->window_should_close)
-		return ;	
-	ImageFillCircleEx(
-		&pWorld->world_image,
-		pWorld->origin_x+centerX,
-		pWorld->origin_y-centerY,
-		radius,
-		fillColor
-		);
-	refreshWorld();
-}
-
-void drawCircle(int centerX, int centerY, int radius) {
-	if (pWorld==NULL)
-		return ;
-	if (pWorld->window_should_close)
-		return ;	
-	ImageDrawCircleEx(
-		&pWorld->world_image,
-		pWorld->origin_x+centerX,
-		pWorld->origin_y-centerY,
-		radius,
-		pTurtle->pen_size,
-		pTurtle->pen_color
-		);
-	refreshWorld();
-}
+//void fillCircle(int centerX, int centerY, int radius, Color fillColor) {
+//	if (pWorld==NULL)
+//		return ;
+//	if (pWorld->window_should_close)
+//		return ;	
+//	ImageFillCircleEx(
+//		&pWorld->world_image,
+//		pWorld->origin_x+centerX,
+//		pWorld->origin_y-centerY,
+//		radius,
+//		fillColor
+//		);
+//	refreshWorld();
+//}
+//
+//void drawCircle(int centerX, int centerY, int radius) {
+//	if (pWorld==NULL)
+//		return ;
+//	if (pWorld->window_should_close)
+//		return ;	
+//	ImageDrawCircleEx(
+//		&pWorld->world_image,
+//		pWorld->origin_x+centerX,
+//		pWorld->origin_y-centerY,
+//		radius,
+//		pTurtle->pen_size,
+//		pTurtle->pen_color
+//		);
+//	refreshWorld();
+//}
 
 
 void drawPoint(int x, int y) {
@@ -3062,29 +3116,29 @@ void beginFill() {
 		return;
 	if (isFilling())
 		return;
-	pWorld->is_filling=true;
-	IntList_init(&(pWorld->path_x),1024);
-	IntList_init(&(pWorld->path_y),1024);
-	IntList_append(&pWorld->path_x,round(pTurtle->x));
-	IntList_append(&pWorld->path_y,round(pTurtle->y));
+	pTurtle->is_filling=true;
+	IntList_init(&(pTurtle->path_x),1024);
+	IntList_init(&(pTurtle->path_y),1024);
+	IntList_append(&pTurtle->path_x,round(pTurtle->x));
+	IntList_append(&pTurtle->path_y,round(pTurtle->y));
 }
 void endFill(Color fillColor) {
 	if (!pWorld)
 		return;
 	if (!isFilling())
 		return;
-	ImageFillPolygonEx(&(pWorld->world_image),pWorld->path_x.datas,
-		pWorld->path_y.datas,pWorld->path_x.size,fillColor);
-	ImageDrawPolylineEx(&(pWorld->world_image),pWorld->path_x.datas,
-		pWorld->path_y.datas,pWorld->path_x.size,pTurtle->pen_size,pTurtle->pen_color);
-	pWorld->is_filling=false;
-	IntList_free(&pWorld->path_x);
-	IntList_free(&pWorld->path_y);
+	ImageFillPolygonEx(&(pWorld->world_image),pTurtle->path_x.datas,
+		pTurtle->path_y.datas,pTurtle->path_x.size,fillColor);
+	ImageDrawPolylineEx(&(pWorld->world_image),pTurtle->path_x.datas,
+		pTurtle->path_y.datas,pTurtle->path_x.size,pTurtle->pen_size,pTurtle->pen_color);
+	pTurtle->is_filling=false;
+	IntList_free(&pTurtle->path_x);
+	IntList_free(&pTurtle->path_y);
 }
 
 int isFilling() {
 	if (pWorld==NULL)
 		return false;
-	return pWorld->is_filling;
+	return pTurtle->is_filling;
 }
 
