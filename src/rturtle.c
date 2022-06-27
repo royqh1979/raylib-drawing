@@ -45,6 +45,9 @@ typedef struct
 	bool hide_grid;
 	bool hide_background_image;
 	Texture2D grids;
+	bool is_filling;
+	IntList path_x;
+	IntList path_y;
 } World;
 
 static World* pWorld = NULL;
@@ -2157,6 +2160,9 @@ void initWorld(int width,int height){
 	pWorld->use_grid = false;
 	pWorld->hide_grid = true;
 	pWorld->hide_background_image = true;
+	pWorld->is_filling = false;
+	memset(&(pWorld->path_x),0,sizeof(IntList));
+	memset(&(pWorld->path_y),0,sizeof(IntList));
 	
 	pTurtle=(Turtle*)malloc(sizeof(Turtle));
 	pTurtle->pen_size = 1;
@@ -2198,6 +2204,8 @@ void closeWorld(){
 	}
 	UnloadTexture(pTurtle->icon);
 	CloseWindow();
+	IntList_free(&(pWorld->path_x));
+	IntList_free(&(pWorld->path_y));
 	free(pWorld);
 	free(pTurtle);
 }
@@ -2344,6 +2352,10 @@ void forward(double step)
 		}
 		pTurtle->x=x;
 		pTurtle->y=y;
+	}
+	if (pWorld->is_filling) {
+		IntList_append(&pWorld->path_x,round(pTurtle->x));
+		IntList_append(&pWorld->path_y,round(pTurtle->y));
 	}
 	refreshWorld();
 }
@@ -2612,9 +2624,20 @@ void hide()
 
 void setXY(double x, double y)
 {
+	if (pWorld==NULL)
+		return;
 	pTurtle->x=pWorld->origin_x+x;
 	pTurtle->y=pWorld->origin_y-y;
 	refreshWorld();
+}
+
+Vector2 getXY() {
+	if (pWorld==NULL)
+		return (Vector2){0,0};
+	Vector2 v;
+	v.x=getX();
+	v.y=getY();
+	return v;
 }
 
 double getX()
@@ -3032,5 +3055,36 @@ void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridC
 	pWorld->grids=LoadTextureFromImage(image);
 	UnloadImage(image);
 	displayWorld();
+}
+
+void beginFill() {
+	if (!pWorld)
+		return;
+	if (isFilling())
+		return;
+	pWorld->is_filling=true;
+	IntList_init(&(pWorld->path_x),1024);
+	IntList_init(&(pWorld->path_y),1024);
+	IntList_append(&pWorld->path_x,round(pTurtle->x));
+	IntList_append(&pWorld->path_y,round(pTurtle->y));
+}
+void endFill(Color fillColor) {
+	if (!pWorld)
+		return;
+	if (!isFilling())
+		return;
+	ImageFillPolygonEx(&(pWorld->world_image),pWorld->path_x.datas,
+		pWorld->path_y.datas,pWorld->path_x.size,fillColor);
+	ImageDrawPolylineEx(&(pWorld->world_image),pWorld->path_x.datas,
+		pWorld->path_y.datas,pWorld->path_x.size,pTurtle->pen_size,pTurtle->pen_color);
+	pWorld->is_filling=false;
+	IntList_free(&pWorld->path_x);
+	IntList_free(&pWorld->path_y);
+}
+
+int isFilling() {
+	if (pWorld==NULL)
+		return false;
+	return pWorld->is_filling;
 }
 

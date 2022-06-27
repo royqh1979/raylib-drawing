@@ -69,6 +69,7 @@ extern "C" {            // Prevents name mangling of functions
 	bool isImmediate();
 	
 	void setXY(double x, double y);
+	Vector2 getXY();
 	void setAngle(double angle);
 	void setHeading(double angle);
 	void turnTo(double angle);
@@ -98,6 +99,10 @@ extern "C" {            // Prevents name mangling of functions
 	
 	void fill(Color fillColor);
 	void fillToBorder(Color borderColor, Color fillColor);
+	
+	void beginFill();
+	void endFill(Color fillColor);
+	int isFilling();
 	
 	void drawPoint(int x, int y);
 	void drawLine(int x0, int y0, int x1, int y1);

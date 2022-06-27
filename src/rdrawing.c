@@ -582,6 +582,7 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 	// Create Edge Table
 	PolyEdgeHeap_init(&edgeTable,num_vertice);
 	PolyEdgeList_init(&edgeList,num_vertice);
+
 	for (int i=0;i<num_vertice;i++) {
 		PPolyEdge e= (PPolyEdge)malloc(sizeof(PolyEdge));
 		int i2=(i+1);
@@ -619,7 +620,19 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 		} else {
 			e->x=e->x2;
 		}
-		PolyEdgeHeap_insert(&edgeTable,e);
+		int hasEdge=0;
+		for (int i=1;i<=edgeTable.size;i++) {
+			if (edgeTable.edges[i]->x1==e->x1
+				&& edgeTable.edges[i]->x2==e->x2
+				&& edgeTable.edges[i]->min_y==e->min_y
+				&& edgeTable.edges[i]->dy == e->dy) {
+				hasEdge=1;
+				break;
+			}
+		} 
+		if (!hasEdge)
+			PolyEdgeHeap_insert(&edgeTable,e);
+	
 		PolyEdgeList_append(&edgeList,e);
 		if (0==i) {
 			min_y = e->min_y;

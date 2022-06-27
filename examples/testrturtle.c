@@ -48,16 +48,23 @@ int main() {
 	setAutoUpdateWorld(false);
 //	setSpeed(100000000);
 //	setImmediate(true);
-	setPenSize(20);
+	setPenSize(1);
 	rt(90);
 	hide();
+	setPenColor(LIGHTRED);
 	while (!WindowShouldClose() ){
 		
 		clear();
-		for (int j=0;j<4;j++) {
+		beginFill();
+		while(1) {
 			fd(200);
-			lt(90);
+			lt(170);
+			int x = round(getX());
+			int y = round(getY());
+			if (x==0 && y==0)
+				break;
 		}
+		endFill(LIGHTYELLOW);
 		lt(1);
 		waitMilliseconds(1);
 		updateWorld();

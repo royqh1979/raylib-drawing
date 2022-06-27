@@ -204,6 +204,22 @@ void IntList_init(IntList* list, int capacity){
 	list->datas=(int*)malloc(sizeof(int)*capacity);
 }
 void IntList_append(IntList* list, int data) {
+	if (list->size>=list->capacity) {
+		int capacity;
+		if (list->capacity<1024)
+			capacity = list->capacity*16;
+		else if (list->capacity<1024*1024)
+			capacity = list->capacity*4;
+		else 
+			capacity = list->capacity*2;
+		int* newdatas = (int*)realloc(list->datas,sizeof(int)*capacity);
+		if (newdatas==NULL) {
+			exit(-20);
+			return;
+		}
+		list->datas=newdatas;
+		list->capacity=capacity;
+	}
 	list->datas[list->size]=data;
 	list->size++;	
 }
