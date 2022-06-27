@@ -125,10 +125,11 @@ static void interactWithUser() {
 
 static void refreshWorld()
 {
-	if (!pWorld || !(pWorld->is_auto_update)) {
+	if (!pWorld) 
 		return;
-	}
 	interactWithUser();
+	if (!(pWorld->is_auto_update))
+		return;
 	pWorld->frame_count++;
 	pWorld->frame_count%=pTurtle->move_speed;
 	if (pTurtle->move_speed>100000) {
@@ -2237,8 +2238,7 @@ void waitMilliseconds(int ms) {
 		return;
 	struct timeval begin, end;
 	gettimeofday(&begin, 0);
-	displayWorld();
-	
+	displayWorld();	
 	while(!pWorld->window_should_close) {
 		interactWithUser();
 		gettimeofday(&end, 0);
