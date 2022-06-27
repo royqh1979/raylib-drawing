@@ -41,9 +41,9 @@
 //    return 0;
 //}
 #include "../src/rturtle.h"
+#include <math.h>
 
 int main() {
-	int n;
 	initWorld(800,600);
 	setAutoUpdateWorld(false);
 //	setSpeed(100000000);
