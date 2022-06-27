@@ -21,166 +21,166 @@ void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color) {
 	ImageFillCircleEx(dst,x,y,pointSize/2,color);
 }
 
-static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int lineWidth, Color color) {
-	if (x1==x0)
-		return;
-	if (x1<x0) {
-		swapInt(&x0,&x1);
-		swapInt(&y0,&y1);
-	}
-	int dx = x1 - x0;
-	int dy = y1 - y0;
-	int yi;
-	if (dy<0) {
-		yi=-1;
-		dy=-dy;
-	} else {
-		yi=1;
-	}
-	int D = (2*dy)-dx;
-	int D_delta1=2*(dy-dx);
-	int D_delta2=2*dy;
-	int y=y0;
-	float lwv = lineWidth*sqrt(dx*dx+dy*dy)/dx;
-	int	w = lwv/2.0;
-	float b = lineWidth*dy / dx;
-	float end_dx=b*lineWidth/2/lwv;
-	float end_dy=b*b/2/lwv;
-	int end_mid_x0 = x0+end_dy;
-	int end_mid_x1 = x1-end_dy;
-	
-	for (int x=x0;x<=x1;x++) {
-		if (x>=end_mid_x0 && x<=end_mid_x1) {
-			for (int yy=y-w;yy<=y+w;yy++) {
-				ImageDrawPixel(image,
-					x,yy,color);
-			}
-		}
-		if (D>0) {
-			y+=yi;
-			D+=D_delta1;
-		}else{
-			D+=D_delta2;
-		}
-	}
-	if (yi>0) {
-		int vx[3];
-		int vy[3];
-		vx[0]=end_mid_x0;
-		vy[0]=y0+end_dy-w;
-		vx[1]=end_mid_x0;
-		vy[1]=y0+end_dy+w;
-		vx[2]=x0-end_dx;
-		vy[2]=y0-end_dy+w;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-		vx[0]=end_mid_x1;
-		vy[0]=y1-end_dy-w;
-		vx[1]=end_mid_x1;
-		vy[1]=y1-end_dy+w;
-		vx[2]=x1+end_dx;
-		vy[2]=y1+end_dy-w;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-	} else {
-		int vx[3];
-		int vy[3];
-		vx[0]=end_mid_x0;
-		vy[0]=y0-end_dy-w;
-		vx[1]=end_mid_x0;
-		vy[1]=y0-end_dy+w;
-		vx[2]=x0-end_dx;
-		vy[2]=y0+end_dy-w;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-		vx[0]=end_mid_x1;
-		vy[0]=y1+end_dy-w;
-		vx[1]=end_mid_x1;
-		vy[1]=y1+end_dy+w;
-		vx[2]=x1+end_dx;
-		vy[2]=y1-end_dy+w;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-	}
-	
-}
-
-static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
-	if (y1==y0)
-		return;
-	if (y1<y0) {
-		swapInt(&x0,&x1);
-		swapInt(&y0,&y1);
-	}		
-	int dx = x1 - x0;
-	int dy = y1 - y0;
-	int xi;
-	if (dx<0) {
-		xi = -1;
-		dx = -dx;
-	} else {
-		xi = 1;
-	}
-	int D = (2*dx) - dy;
-	int D_delta1=2*(dx-dy);
-	int D_delta2=2*dx;
-	
-	int x = x0;
-	float lwh = lineWidth*sqrt(dx*dx+dy*dy)/dy;
-	int	w = lwh/2.0;
-	float b = lineWidth*dx / dy;
-	float end_dy=b*lineWidth/2/lwh;
-	float end_dx=b*b/2/lwh;
-	int end_mid_y0 = y0+end_dy;
-	int end_mid_y1 = y1-end_dy;
-	
-	//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
-	for (int y=y0;y<=y1;y++) {
-		if (y>=end_mid_y0 && y<=end_mid_y1) {
-			for (int xx=x-w;xx<=x+w;xx++) {
-				ImageDrawPixel(image,
-					xx,y,color);
-			}
-		}
-		if (D>0) {
-			x+=xi;
-			D+=D_delta1;
-		}else{
-			D+=D_delta2;
-		}
-	}
-	if (xi>0) {
-		int vx[3];
-		int vy[3];
-		vx[0]=x0+end_dx-w;
-		vy[0]=end_mid_y0;
-		vx[1]=x0+end_dx+w;
-		vy[1]=end_mid_y0;
-		vx[2]=x0-end_dx+w;
-		vy[2]=y0-end_dy;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-		vx[0]=x1-end_dx-w;
-		vy[0]=end_mid_y1;
-		vx[1]=x1-end_dx+w;
-		vy[1]=end_mid_y1;
-		vx[2]=x1+end_dx-w;
-		vy[2]=y1+end_dy;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-	} else {
-		int vx[3];
-		int vy[3];
-		vx[0]=x0-end_dx-w;
-		vy[0]=end_mid_y0;
-		vx[1]=x0-end_dx+w;
-		vy[1]=end_mid_y0;
-		vx[2]=x0+end_dx-w;
-		vy[2]=y0-end_dy;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-		vx[0]=x1+end_dx-w;
-		vy[0]=end_mid_y1;
-		vx[1]=x1+end_dx+w;
-		vy[1]=end_mid_y1;
-		vx[2]=x1-end_dx+w;
-		vy[2]=y1+end_dy;
-		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
-	}
-} 
+//static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int lineWidth, Color color) {
+//	if (x1==x0)
+//		return;
+//	if (x1<x0) {
+//		swapInt(&x0,&x1);
+//		swapInt(&y0,&y1);
+//	}
+//	int dx = x1 - x0;
+//	int dy = y1 - y0;
+//	int yi;
+//	if (dy<0) {
+//		yi=-1;
+//		dy=-dy;
+//	} else {
+//		yi=1;
+//	}
+//	int D = (2*dy)-dx;
+//	int D_delta1=2*(dy-dx);
+//	int D_delta2=2*dy;
+//	int y=y0;
+//	float lwv = lineWidth*sqrt(dx*dx+dy*dy)/dx;
+//	int	w = lwv/2.0;
+//	float b = lineWidth*dy / dx;
+//	float end_dx=b*lineWidth/2/lwv;
+//	float end_dy=b*b/2/lwv;
+//	int end_mid_x0 = x0+end_dy;
+//	int end_mid_x1 = x1-end_dy;
+//	
+//	for (int x=x0;x<=x1;x++) {
+//		if (x>=end_mid_x0 && x<=end_mid_x1) {
+//			for (int yy=y-w;yy<=y+w;yy++) {
+//				ImageDrawPixel(image,
+//					x,yy,color);
+//			}
+//		}
+//		if (D>0) {
+//			y+=yi;
+//			D+=D_delta1;
+//		}else{
+//			D+=D_delta2;
+//		}
+//	}
+//	if (yi>0) {
+//		int vx[3];
+//		int vy[3];
+//		vx[0]=end_mid_x0;
+//		vy[0]=y0+end_dy-w;
+//		vx[1]=end_mid_x0;
+//		vy[1]=y0+end_dy+w;
+//		vx[2]=x0-end_dx;
+//		vy[2]=y0-end_dy+w;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//		vx[0]=end_mid_x1;
+//		vy[0]=y1-end_dy-w;
+//		vx[1]=end_mid_x1;
+//		vy[1]=y1-end_dy+w;
+//		vx[2]=x1+end_dx;
+//		vy[2]=y1+end_dy-w;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//	} else {
+//		int vx[3];
+//		int vy[3];
+//		vx[0]=end_mid_x0;
+//		vy[0]=y0-end_dy-w;
+//		vx[1]=end_mid_x0;
+//		vy[1]=y0-end_dy+w;
+//		vx[2]=x0-end_dx;
+//		vy[2]=y0+end_dy-w;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//		vx[0]=end_mid_x1;
+//		vy[0]=y1+end_dy-w;
+//		vx[1]=end_mid_x1;
+//		vy[1]=y1+end_dy+w;
+//		vx[2]=x1+end_dx;
+//		vy[2]=y1-end_dy+w;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//	}
+//	
+//}
+//
+//static void doDrawLineHigh(Image* image,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
+//	if (y1==y0)
+//		return;
+//	if (y1<y0) {
+//		swapInt(&x0,&x1);
+//		swapInt(&y0,&y1);
+//	}		
+//	int dx = x1 - x0;
+//	int dy = y1 - y0;
+//	int xi;
+//	if (dx<0) {
+//		xi = -1;
+//		dx = -dx;
+//	} else {
+//		xi = 1;
+//	}
+//	int D = (2*dx) - dy;
+//	int D_delta1=2*(dx-dy);
+//	int D_delta2=2*dx;
+//	
+//	int x = x0;
+//	float lwh = lineWidth*sqrt(dx*dx+dy*dy)/dy;
+//	int	w = lwh/2.0;
+//	float b = lineWidth*dx / dy;
+//	float end_dy=b*lineWidth/2/lwh;
+//	float end_dx=b*b/2/lwh;
+//	int end_mid_y0 = y0+end_dy;
+//	int end_mid_y1 = y1-end_dy;
+//	
+//	//	TraceLog(LOG_WARNING, "%f, %f, %f,%d,%d,%d,%d\n", lwh,b,end_dy, y0,y1,end_mid_y0,end_mid_y1);
+//	for (int y=y0;y<=y1;y++) {
+//		if (y>=end_mid_y0 && y<=end_mid_y1) {
+//			for (int xx=x-w;xx<=x+w;xx++) {
+//				ImageDrawPixel(image,
+//					xx,y,color);
+//			}
+//		}
+//		if (D>0) {
+//			x+=xi;
+//			D+=D_delta1;
+//		}else{
+//			D+=D_delta2;
+//		}
+//	}
+//	if (xi>0) {
+//		int vx[3];
+//		int vy[3];
+//		vx[0]=x0+end_dx-w;
+//		vy[0]=end_mid_y0;
+//		vx[1]=x0+end_dx+w;
+//		vy[1]=end_mid_y0;
+//		vx[2]=x0-end_dx+w;
+//		vy[2]=y0-end_dy;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//		vx[0]=x1-end_dx-w;
+//		vy[0]=end_mid_y1;
+//		vx[1]=x1-end_dx+w;
+//		vy[1]=end_mid_y1;
+//		vx[2]=x1+end_dx-w;
+//		vy[2]=y1+end_dy;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//	} else {
+//		int vx[3];
+//		int vy[3];
+//		vx[0]=x0-end_dx-w;
+//		vy[0]=end_mid_y0;
+//		vx[1]=x0-end_dx+w;
+//		vy[1]=end_mid_y0;
+//		vx[2]=x0+end_dx-w;
+//		vy[2]=y0-end_dy;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//		vx[0]=x1+end_dx-w;
+//		vy[0]=end_mid_y1;
+//		vx[1]=x1+end_dx+w;
+//		vy[1]=end_mid_y1;
+//		vx[2]=x1-end_dx+w;
+//		vy[2]=y1+end_dy;
+//		ImageFillTriangleEx(image,vx[0],vy[0],vx[1],vy[1],vx[2],vy[2],color);
+//	}
+//} 
 
 void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
 	if (lineWidth==1) {
@@ -620,19 +620,19 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 		} else {
 			e->x=e->x2;
 		}
-		int hasEdge=0;
-		for (int i=1;i<=edgeTable.size;i++) {
-			if (edgeTable.edges[i]->x1==e->x1
-				&& edgeTable.edges[i]->x2==e->x2
-				&& edgeTable.edges[i]->min_y==e->min_y
-				&& edgeTable.edges[i]->dy == e->dy) {
-				hasEdge=1;
-				break;
-			}
-		} 
-		if (!hasEdge)
-			PolyEdgeHeap_insert(&edgeTable,e);
-	
+//		int hasEdge=0;
+//		for (int i=1;i<=edgeTable.size;i++) {
+//			if (edgeTable.edges[i]->x1==e->x1
+//				&& edgeTable.edges[i]->x2==e->x2
+//				&& edgeTable.edges[i]->min_y==e->min_y
+//				&& edgeTable.edges[i]->dy == e->dy) {
+//				hasEdge=1;
+//				break;
+//			}
+//		} 
+//		if (!hasEdge)
+//			PolyEdgeHeap_insert(&edgeTable,e);
+		PolyEdgeHeap_insert(&edgeTable,e);
 		PolyEdgeList_append(&edgeList,e);
 		if (0==i) {
 			min_y = e->min_y;
