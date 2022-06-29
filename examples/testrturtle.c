@@ -82,14 +82,19 @@ int main() {
 	setSpeed(500);
 	setPenSize(1);
 	
+	beginFill();
 	fd(200);
 	rightTurn(90);arc(-200,90);
-	rightTurn(90);fd(200);rightTurn(90);
+	rightTurn(90);fd(200);
+	endFill(LIGHTGREEN);
+	rightTurn(90);
 	arc(-100,180);
 	lt(180);
 	arc(200,60);
 	gotoXY(100,0);
-	penUp();gotoXY(110,110);fill(ORANGE);	
+	penUp();
+	gotoXY(110,110);
+	fill(ORANGE);	
 	
 	//hide();
 	waitClick();
