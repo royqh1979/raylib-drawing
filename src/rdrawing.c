@@ -17,8 +17,10 @@ static void swapInt(int* p1, int*p2) {
 }
 
 void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color) {
-	
-	ImageFillCircleEx(dst,x,y,pointSize/2,color);
+	if (pointSize<=1) 
+		ImageDrawPixel(dst,x,y,color);
+	else
+		ImageFillCircleEx(dst,x,y,pointSize/2,color);
 }
 
 //static void doDrawLineLow(Image* image, int x0, int y0, int x1, int y1, int lineWidth, Color color) {
@@ -187,11 +189,11 @@ void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, C
 		ImageDrawLine(dst,x0,y0,x1,y1,color);
 		return;
 	}
-//	if (abs(y1-y0)<abs(x1-x0)) {
-//		doDrawLineLow(dst,x0,y0,x1,y1,lineWidth,color);
-//	} else {
-//		doDrawLineHigh(dst,x0,y0,x1,y1,lineWidth, color);
-//	}	
+	//	if (abs(y1-y0)<abs(x1-x0)) {
+	//		doDrawLineLow(dst,x0,y0,x1,y1,lineWidth,color);
+	//	} else {
+	//		doDrawLineHigh(dst,x0,y0,x1,y1,lineWidth, color);
+	//	}	
 	if (x0==x1 && y0==y1)
 		return;
 	if (lineWidth<1)
@@ -582,7 +584,7 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 	// Create Edge Table
 	PolyEdgeHeap_init(&edgeTable,num_vertice);
 	PolyEdgeList_init(&edgeList,num_vertice);
-
+	
 	for (int i=0;i<num_vertice;i++) {
 		PPolyEdge e= (PPolyEdge)malloc(sizeof(PolyEdge));
 		int i2=(i+1);
@@ -620,18 +622,18 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 		} else {
 			e->x=e->x2;
 		}
-//		int hasEdge=0;
-//		for (int i=1;i<=edgeTable.size;i++) {
-//			if (edgeTable.edges[i]->x1==e->x1
-//				&& edgeTable.edges[i]->x2==e->x2
-//				&& edgeTable.edges[i]->min_y==e->min_y
-//				&& edgeTable.edges[i]->dy == e->dy) {
-//				hasEdge=1;
-//				break;
-//			}
-//		} 
-//		if (!hasEdge)
-//			PolyEdgeHeap_insert(&edgeTable,e);
+		//		int hasEdge=0;
+		//		for (int i=1;i<=edgeTable.size;i++) {
+		//			if (edgeTable.edges[i]->x1==e->x1
+		//				&& edgeTable.edges[i]->x2==e->x2
+		//				&& edgeTable.edges[i]->min_y==e->min_y
+		//				&& edgeTable.edges[i]->dy == e->dy) {
+		//				hasEdge=1;
+		//				break;
+		//			}
+		//		} 
+		//		if (!hasEdge)
+		//			PolyEdgeHeap_insert(&edgeTable,e);
 		PolyEdgeHeap_insert(&edgeTable,e);
 		PolyEdgeList_append(&edgeList,e);
 		if (0==i) {
@@ -681,10 +683,10 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 					IntList_append(&intersects, e1->x);
 				}
 			}
-
-//			TraceLog(LOG_WARNING,"%d %d %d",y, acl.size,intersects.size);
+			
+			//			TraceLog(LOG_WARNING,"%d %d %d",y, acl.size,intersects.size);
 			for (int i=0;i+1<intersects.size;i+=2) {
-//				TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size,i,intersects.edges[i],intersects.edges[i+1]);
+				//				TraceLog(LOG_WARNING,"%d, %d, %d, %d",intersects.size,i,intersects.edges[i],intersects.edges[i+1]);
 				doDrawFillLineH(dst,intersects.datas[i],intersects.datas[i+1],y,color);
 			}
 			for (int i=0;i<horizontalEdges.size;i++) {
@@ -734,24 +736,24 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 	PolyEdgeList_free(&horizontalEdges);
 	IntList_free(&intersects);
 	
-//	FILE *fp=fopen("r:\\test.dat","w");
-//	fprintf(fp,"int num=%d;\n",num_vertice);
-//	fprintf(fp,"int vx[]={\n");
-//	for (int i=0;i<num_vertice;i++) {
-//		fprintf(fp,"\t%d",vertice_x[i]);
-//		if (i<num_vertice-1)
-//			fprintf(fp,",\n");
-//	}
-//	fprintf(fp,"};\n");
-//	fprintf(fp,"int vy[]={\n");
-//	for (int i=0;i<num_vertice;i++) {
-//		fprintf(fp,"\t%d",vertice_y[i]);
-//		if (i<num_vertice-1)
-//			fprintf(fp,",\n");
-//	}
-//	fprintf(fp,"};\n");
-//	fclose(fp);
-		
+	//	FILE *fp=fopen("r:\\test.dat","w");
+	//	fprintf(fp,"int num=%d;\n",num_vertice);
+	//	fprintf(fp,"int vx[]={\n");
+	//	for (int i=0;i<num_vertice;i++) {
+	//		fprintf(fp,"\t%d",vertice_x[i]);
+	//		if (i<num_vertice-1)
+	//			fprintf(fp,",\n");
+	//	}
+	//	fprintf(fp,"};\n");
+	//	fprintf(fp,"int vy[]={\n");
+	//	for (int i=0;i<num_vertice;i++) {
+	//		fprintf(fp,"\t%d",vertice_y[i]);
+	//		if (i<num_vertice-1)
+	//			fprintf(fp,",\n");
+	//	}
+	//	fprintf(fp,"};\n");
+	//	fclose(fp);
+	
 }
 
 void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color) {
@@ -927,14 +929,14 @@ void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, 
 		swapInt(&top,&bottom);
 	rx=MIN(rx,(right-left)/2);
 	ry=MIN(ry,(bottom-top)/2);
-//	int x0=left;
+	//	int x0=left;
 	int x1=left+rx;
 	int x2=right-rx;
-//	int x3=right;
-//	int y0=top;
+	//	int x3=right;
+	//	int y0=top;
 	int y1=top+ry;
 	int y2=bottom-ry;
-//	int y3=bottom;
+	//	int y3=bottom;
 	int twoASquare=2*rx*rx;
 	int twoBSquare=2*ry*ry;
 	int x=rx;
@@ -1288,7 +1290,7 @@ static void doFillSector2(Image* dst, int cx, int cy, int radiusX,int radiusY, f
 	int y2=round(r2*sin(endAngle));
 	if (x1==x2 && y1==y2)
 		return;
-
+	
 	int dy0 = y2-y0;
 	int dx0 = x2-x0;
 	int xi0;
@@ -1958,6 +1960,37 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	}		
 	IntList_free(&endpoints);
 }
+
+void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int lineWidth, Color color){
+	int max_x = MAX(x0,x1);
+	max_x = MAX(max_x,x2);
+	max_x = MAX(max_x,x3);
+	int max_y = MAX(y0,y1);
+	max_y = MAX(max_y,y2);
+	max_y = MAX(max_y,y3);
+	int min_x = MIN(x0,x1);
+	min_x = MIN(min_x,x2);
+	min_x = MIN(min_x,x3);
+	int min_y = MIN(y0,y1);
+	min_y = MIN(min_y,y2);
+	min_y = MIN(min_y,y3);
+	int maxd=MAX(max_x-min_x,max_y-min_y);
+	if (maxd==0)
+		maxd=1;
+	int oldX=x0;
+	int oldY=y0;
+	for (int i=1;i<maxd;i++) {
+		double t = (double)i/maxd;
+		double t1 = 1-t;
+		int x = round(t1*t1*t1*x0+3*t*t1*t1*x1+3*t*t*t1*x2+t*t*t*x3);
+		int y = round(t1*t1*t1*y0+3*t*t1*t1*y1+3*t*t*t1*y2+t*t*t*y3);
+		ImageDrawLineEx(dst,oldX,oldY,x,y,lineWidth,color);
+		oldX=x;
+		oldY=y;
+	}
+	ImageDrawLineEx(dst,oldX,oldY,x3,y3,lineWidth,color);
+}
+
 
 void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle,  int lineWidth, Color color) {
 	float totalAngle=endAngle-beginAngle;

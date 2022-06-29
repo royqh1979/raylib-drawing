@@ -4,7 +4,7 @@ rdrawing 1.1£º
   - fix: ImageDrawSectorEx error
   - fix: ImageFillTriangleEx dead lock, when three vertices are on the same vertical line
   - fix: ImageDrawLineEx error, when length of line is shorter than line width
-  - enhancement: add arc function()
+  - enhancement: add ImageDrawCubicBezierEx()
 
 rturtle 1.1:
 
@@ -16,6 +16,7 @@ rturtle 1.1:
   - change: setXY() will leave tracks when pen down
   - add: setX() / setY()
   - remove: drawCircle() / fillCircle()
+  - enhancement: add arc function()
 
 rturtle 1.0
 rdrawing 1.0
