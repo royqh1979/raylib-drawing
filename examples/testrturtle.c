@@ -43,36 +43,56 @@
 #include "../src/rturtle.h"
 #include <math.h>
 
+//int main() {
+//	initWorld(800,600);
+//	setAutoUpdateWorld(false);
+////	setSpeed(100000000);
+////	setImmediate(true);
+//	setPenSize(1);
+//	rt(90);
+//	hide();
+//	setPenColor(LIGHTRED);
+//	while (!WindowShouldClose() ){
+//		
+//		clear();
+//		beginFill();
+////		while(1) {
+////			fd(200);
+////			lt(170);
+////			int x = round(getX());
+////			int y = round(getY());
+////			if (x==0 && y==0)
+////				break;
+////		}
+//		setXY(100,0);
+//		setXY(100,100);
+//		setXY(0,100);
+//		setXY(0,0);
+//		endFill(LIGHTYELLOW);
+//		lt(1);
+//		waitMilliseconds(1);
+//		updateWorld();
+//	}
+//	waitClick();
+//	return 0;
+//}
+
 int main() {
 	initWorld(800,600);
-	setAutoUpdateWorld(false);
-//	setSpeed(100000000);
-//	setImmediate(true);
+	setSpeed(500);
 	setPenSize(1);
-	rt(90);
-	hide();
-	setPenColor(LIGHTRED);
-	while (!WindowShouldClose() ){
-		
-		clear();
-		beginFill();
-//		while(1) {
-//			fd(200);
-//			lt(170);
-//			int x = round(getX());
-//			int y = round(getY());
-//			if (x==0 && y==0)
-//				break;
-//		}
-		setXY(100,0);
-		setXY(100,100);
-		setXY(0,100);
-		setXY(0,0);
-		endFill(LIGHTYELLOW);
-		lt(1);
-		waitMilliseconds(1);
-		updateWorld();
-	}
+	
+	fd(200);
+	rightTurn(90);arc(-200,90);
+	rightTurn(90);fd(200);rightTurn(90);
+	arc(-100,180);
+	lt(180);
+	arc(200,60);
+	gotoXY(100,0);
+	penUp();gotoXY(110,110);fill(ORANGE);	
+	
+	//hide();
 	waitClick();
+	
 	return 0;
 }

@@ -40,6 +40,10 @@ extern "C" {            // Prevents name mangling of functions
 	void turnTo(double angle);
 	void faceXY(double x,double y);	
 	void gotoXY(double x, double y);
+
+	//move turtle to draw a circle arc
+	void arc(double radius, int degree);	
+
 	
 	//change turtle's position or heading (no animation)
 	void setXY(double x, double y);

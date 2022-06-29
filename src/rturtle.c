@@ -55,7 +55,7 @@ static Turtle* pTurtle = NULL;
 
 static double d2a(double degree)
 {
-	return degree*M_PI/180.0;
+	return degree*PI/180.0;
 }
 
 static void captureScreen() {
@@ -2161,7 +2161,7 @@ void initWorld(int width,int height){
 	pWorld->use_grid = false;
 	pWorld->hide_grid = true;
 	pWorld->hide_background_image = true;
-
+	
 	
 	pTurtle=(Turtle*)malloc(sizeof(Turtle));
 	pTurtle->pen_size = 1;
@@ -2273,22 +2273,18 @@ void forward(double step)
 		delta_y=-delta_y;
 		step=-step;
 	}
-	
 	if (!pWorld->is_immediate) {
+		double rx=pTurtle->x;
+		double ry=pTurtle->y;
+		
 		old_x=x=pTurtle->x;
 		old_y=y=pTurtle->y;
-		for (int i=0; i<step; i++)
+		int i;
+		int iStep=floor(step);
+		for (i=0; i<iStep; i++)
 		{
-			if ((i+1)<step)
-			{
-				x+=delta_x;
-				y+=delta_y;
-			}
-			else
-			{
-				x+=(step-i)*delta_x;
-				y+=(step-i)*delta_y;
-			}
+			x+=delta_x;
+			y+=delta_y;
 			
 			if (pWorld->is_rewind)
 			{
@@ -2327,6 +2323,38 @@ void forward(double step)
 			pTurtle->y=y;
 			refreshWorld();
 		}
+		
+		x=rx+step*delta_x;
+		y=ry+step*delta_y;
+		if (pWorld->is_rewind) {
+			while (x<0) {
+				x+=pWorld->width;
+				old_x+=pWorld->width;
+			}
+			while (x>pWorld->width) {
+				x-=pWorld->width;
+				old_x-=pWorld->width;
+			}
+			while (y<0) {
+				y+=pWorld->height;
+				old_y+=pWorld->height;
+			}
+			while (y>pWorld->height) {
+				y-=pWorld->height;
+				old_y-=pWorld->height;
+			}
+		}
+		if (pTurtle->is_pen_down)
+		{
+			doDrawLineF(
+				old_x,
+				old_y,
+				x,
+				y);
+		}
+		pTurtle->x=x;
+		pTurtle->y=y;
+		refreshWorld();
 	} else {
 		x=pTurtle->x+step*delta_x;
 		y=pTurtle->y+step*delta_y;
@@ -2354,6 +2382,7 @@ void forward(double step)
 		pTurtle->x=x;
 		pTurtle->y=y;
 	}
+	
 	if (pTurtle->is_filling) {
 		IntList_append(&pTurtle->path_x,round(pTurtle->x));
 		IntList_append(&pTurtle->path_y,round(pTurtle->y));
@@ -2368,6 +2397,28 @@ void backward(double step)
 {
 	forward(-step);
 }
+void arc(double radius, int degree) {
+	if (degree==0)
+		return;
+	
+	
+	int r_sign = radius > 0 ? 1 : -1;  // radius是正则是逆时钟画
+	int d_sign = degree > 0 ? 1 : -1;  //bk大于0则是顺着方向画,否则倒着画
+	if (degree<0)
+		degree=-degree;
+	radius = fabs(radius);
+	double step = d_sign * 2 * PI * radius /360.0;
+	int degree_step = 1*r_sign*d_sign;
+	
+	fd(step/2);
+	for(int i=0;i<degree-1;i++)
+	{
+		leftTurn(degree_step);
+		fd(step);
+	}	
+	leftTurn(degree_step);
+	fd(step/2);	
+}	
 void lt(double degree)
 {
 	leftTurn(degree);
@@ -2481,7 +2532,7 @@ void clear()
 	if (pWorld->window_should_close)
 		return;
 	ImageClearBackground(&pWorld->world_image,BLANK);
-
+	
 	refreshWorld();
 }
 
@@ -2778,7 +2829,7 @@ void faceXY(double x,double y)
 	y=pWorld->origin_y-y;
 	double delta_x=x-pTurtle->x;
 	double delta_y=-(y-pTurtle->y);
-	double angle=atan2(delta_y,delta_x)/M_PI*180;
+	double angle=atan2(delta_y,delta_x)/PI*180;
 	turnTo(angle);
 }
 
