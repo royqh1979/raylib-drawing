@@ -161,6 +161,10 @@ extern "C" {            // Prevents name mangling of functions
 	void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX, int radiusY,  float beginAngle, float endAngle, int lineWidth, Color color);
 	void ImageFillSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, Color fillColor);
 	void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, int lineWidth, Color color);
+	
+	int *LoadCJKCodepoints(int *count);
+	Font LoadCJKFont(const char *fileName, int fontSize);
+	
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
 #endif
