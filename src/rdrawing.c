@@ -2072,28 +2072,3 @@ void ImageSetJoinStyle(ImageJoinStyle style) {
 ImageJoinStyle ImageGetJoinStyle() {
 	return _default_image_join_style;
 }
-
-static int fillCodepoints(int* codepoints, int start,int end) {
-	for (int i=start;i<=end;i++) {
-		codepoints[i-start]=i;
-	}
-	return (end-start)+1;
-}
-
-int *LoadCJKCodepoints(int *count) {
-	*count+=0xFF+1+(0x9FFF-0x4E00+1)+(0xFFEF-0xFF00+1);
-	int *result=(int*)RL_MALLOC(sizeof(int)*(*count));
-	int num=0;
-	num+=fillCodepoints(result+num,0x0,0xFF);
-	num+=fillCodepoints(result+num,0x4E00,0x9FFF);
-	num+=fillCodepoints(result+num,0xFF00,0xFFEF);
-	return result;
-}
-
-Font LoadCJKFont(const char *fileName, int fontSize) {
-	int codeCount;	
-	int *codes = LoadCJKCodepoints(&codeCount);
-	Font font = LoadFontEx(fileName,fontSize,codes,codeCount);
-	UnloadCodepoints(codes);
-	return font;
-}
