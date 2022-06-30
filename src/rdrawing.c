@@ -1974,7 +1974,7 @@ void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, 
 	int min_y = MIN(y0,y1);
 	min_y = MIN(min_y,y2);
 	min_y = MIN(min_y,y3);
-	int maxd=MAX(max_x-min_x,max_y-min_y);
+	int maxd=(max_x-min_x)+(max_y-min_y);
 	if (maxd==0)
 		maxd=1;
 	int oldX=x0;
@@ -1984,11 +1984,19 @@ void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, 
 		double t1 = 1-t;
 		int x = round(t1*t1*t1*x0+3*t*t1*t1*x1+3*t*t*t1*x2+t*t*t*x3);
 		int y = round(t1*t1*t1*y0+3*t*t1*t1*y1+3*t*t*t1*y2+t*t*t*y3);
-		ImageDrawLineEx(dst,oldX,oldY,x,y,lineWidth,color);
+		int dx=x-oldX;
+		int dy=y-oldY;
+		if (dx!=0 || dy!=0) {
+			ImageDrawLineEx(dst,oldX,oldY,x,y,lineWidth,color);
+		}
 		oldX=x;
 		oldY=y;
 	}
-	ImageDrawLineEx(dst,oldX,oldY,x3,y3,lineWidth,color);
+	int dx=x3-oldX;
+	int dy=y3-oldY;
+	if (dx!=0 || dy!=0) {
+		ImageDrawLineEx(dst,oldX,oldY,x3,y3,lineWidth,color);
+	}
 }
 
 
