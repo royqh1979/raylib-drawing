@@ -1961,29 +1961,29 @@ static void doDrawArc2(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	IntList_free(&endpoints);
 }
 
-void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int lineWidth, Color color){
-	int max_x = MAX(x0,x1);
-	max_x = MAX(max_x,x2);
-	max_x = MAX(max_x,x3);
-	int max_y = MAX(y0,y1);
-	max_y = MAX(max_y,y2);
-	max_y = MAX(max_y,y3);
-	int min_x = MIN(x0,x1);
-	min_x = MIN(min_x,x2);
-	min_x = MIN(min_x,x3);
-	int min_y = MIN(y0,y1);
-	min_y = MIN(min_y,y2);
-	min_y = MIN(min_y,y3);
+void ImageDrawCubicBezierEx(Image* dst, int startX, int startY, int endX, int endY, int ctrlX1, int ctrlY1, int ctrlX2, int ctrlY2, int lineWidth, Color color){
+	int max_x = MAX(startX,ctrlX1);
+	max_x = MAX(max_x,ctrlX2);
+	max_x = MAX(max_x,endX);
+	int max_y = MAX(startY,ctrlY1);
+	max_y = MAX(max_y,ctrlY2);
+	max_y = MAX(max_y,endY);
+	int min_x = MIN(startX,ctrlX1);
+	min_x = MIN(min_x,ctrlX2);
+	min_x = MIN(min_x,endX);
+	int min_y = MIN(startY,ctrlY1);
+	min_y = MIN(min_y,ctrlY2);
+	min_y = MIN(min_y,endY);
 	int maxd=(max_x-min_x)+(max_y-min_y);
 	if (maxd==0)
 		maxd=1;
-	int oldX=x0;
-	int oldY=y0;
+	int oldX=startX;
+	int oldY=startY;
 	for (int i=1;i<maxd;i++) {
 		double t = (double)i/maxd;
 		double t1 = 1-t;
-		int x = round(t1*t1*t1*x0+3*t*t1*t1*x1+3*t*t*t1*x2+t*t*t*x3);
-		int y = round(t1*t1*t1*y0+3*t*t1*t1*y1+3*t*t*t1*y2+t*t*t*y3);
+		int x = round(t1*t1*t1*startX+3*t*t1*t1*ctrlX1+3*t*t*t1*ctrlX2+t*t*t*endX);
+		int y = round(t1*t1*t1*startY+3*t*t1*t1*ctrlY1+3*t*t*t1*ctrlY2+t*t*t*endY);
 		int dx=x-oldX;
 		int dy=y-oldY;
 		if (dx!=0 || dy!=0) {
@@ -1992,10 +1992,10 @@ void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, 
 		oldX=x;
 		oldY=y;
 	}
-	int dx=x3-oldX;
-	int dy=y3-oldY;
+	int dx=endX-oldX;
+	int dy=endY-oldY;
 	if (dx!=0 || dy!=0) {
-		ImageDrawLineEx(dst,oldX,oldY,x3,y3,lineWidth,color);
+		ImageDrawLineEx(dst,oldX,oldY,endX,endY,lineWidth,color);
 	}
 }
 

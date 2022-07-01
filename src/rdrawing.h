@@ -156,7 +156,7 @@ extern "C" {            // Prevents name mangling of functions
 	void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, Color fillColor);
 	void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry, int borderWidth, Color color);
 	
-	void ImageDrawCubicBezierEx(Image* dst, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int lineWidth, Color color);
+	void ImageDrawCubicBezierEx(Image* dst, int startX, int startY, int endX, int endY, int ctrlX1, int ctrlY1, int ctrlX2, int ctrlY2, int lineWidth, Color color);
 	void ImageDrawArcEx(Image* dst,int cx, int cy, int radiusX, int radiusY,  float beginAngle, float endAngle, int lineWidth, Color color);
 	void ImageFillSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, Color fillColor);
 	void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float beginAngle, float endAngle, int lineWidth, Color color);

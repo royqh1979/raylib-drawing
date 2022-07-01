@@ -1,4 +1,3 @@
-#!/bin/bash
 
 set OLD_PATH=%PATH%
 set MINGW32=E:\workspaces\contributes\MinGW\MinGW32
