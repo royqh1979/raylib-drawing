@@ -117,6 +117,9 @@ static void interactWithUser() {
 	if (IsKeyPressed(KEY_F3)) {
 		pTurtle->is_show=!pTurtle->is_show; 
 	} 
+	if (IsKeyPressed(KEY_F4)) {
+		pWorld->hide_background_image=!pWorld->hide_background_image; 
+	} 
 	if (IsKeyPressed(KEY_F5)) {
 		captureScreen(); 
 	} 
@@ -2160,7 +2163,7 @@ void initWorld(int width,int height){
 	pWorld->window_should_close=false;
 	pWorld->use_grid = false;
 	pWorld->hide_grid = true;
-	pWorld->hide_background_image = true;
+	pWorld->hide_background_image = false;
 	
 	
 	pTurtle=(Turtle*)malloc(sizeof(Turtle));
@@ -2919,6 +2922,20 @@ int setBackgroundImageFile(const char* filename) {
 	UnloadImage(image);
 	return 0;
 }
+
+void hideBackgroundImage() {
+	if (pWorld==NULL)
+		return ;
+	pWorld->hide_background_image=true;
+	refreshWorld();
+}
+void unhideBackgroundImage() {
+	if (pWorld==NULL)
+		return ;
+	pWorld->hide_background_image=false;
+	refreshWorld();
+}
+
 
 void setBackgroundColor(Color color)
 {

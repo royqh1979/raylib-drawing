@@ -32,11 +32,13 @@ UnitCount = 5
 UsePrecompiledHeader = 0
 PrecompiledHeader = 
 UseUTF8 = 0
-CompilerSetType = 1
+CompilerSetType = 0
 StaticLink = 0
 AddCharset = 1
 Encoding = AUTO
 ModelType = 0
+Bins = 
+ExecEncoding = SYSTEM
 
 
 [VersionInfo]

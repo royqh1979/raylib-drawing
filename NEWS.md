@@ -1,3 +1,8 @@
+rturtle 1.2:
+
+  - fix: doesn't show background image 
+  - enhancement: F4 toggle hide/unhide background image
+
 rdrawing 1.1£º
 
   - enhancement: add enum ImageJoinStyle and ImageSetJoinStyle() ImageGetJoinStyle() functions

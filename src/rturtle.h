@@ -128,6 +128,8 @@ extern "C" {            // Prevents name mangling of functions
 	//background
 	void setBackgroundImage(Image backImg);
 	int setBackgroundImageFile(const char* filename);
+	void hideBackgroundImage();
+	void unhideBackgroundImage();
 	void setBackgroundColor(Color color);
 	Color getBackgroundColor();
 	
