@@ -1,3 +1,7 @@
+rturtle 1.3:
+
+  - fix: when background color is set to black, all drawing is not visible
+
 rturtle 1.2:
 
   - fix: doesn't show background image 

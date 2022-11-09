@@ -79,7 +79,9 @@
 
 int main() {
 	initWorld(800,600);
-	setBackgroundImageFile("r:\\banner-001.png");
+	setBackgroundColor(BLACK);
+	setPenColor(LIGHTRED);
+	//setBackgroundImageFile("r:\\banner-001.png");
 	setSpeed(5000);
 	setPenSize(1);
 	

@@ -73,7 +73,7 @@ static void captureScreen() {
 		pWorld->height-20-GetFontDefault().baseSize*2,20,pTurtle->pen_color);
 	Texture2D texture=LoadTextureFromImage(image);
 	BeginDrawing();
-	DrawTexture(texture,0,0,pWorld->back_color);
+	DrawTexture(texture,0,0,WHITE);
 	EndDrawing();
 	UnloadImage(image);
 	sleep(1);
@@ -88,23 +88,25 @@ static void displayWorld() {
 	BeginDrawing();
 	ClearBackground(pWorld->back_color);
 	if (pWorld->use_background_image && !pWorld->hide_background_image) {
-		DrawTexture(pWorld->background,0,0,pWorld->back_color);
+		TraceLog(LOG_ERROR,"ttt");
+		DrawTexture(pWorld->background,0,0,WHITE);
 	}
 	if (pWorld->use_grid && !pWorld->hide_grid) {
-		DrawTexture(pWorld->grids,0,0,pWorld->back_color);			
+		TraceLog(LOG_ERROR,"ttt1");
+		DrawTexture(pWorld->grids,0,0,WHITE);			
 	}
-	DrawTexture(world_texture,0,0,pWorld->back_color);	
+	DrawTexture(world_texture,0,0,WHITE);	
 	if (pTurtle->is_show) {
 		Vector2 pos;
 		pos.x=pTurtle->x-(pTurtle->icon_width*sqrt(2)/2)*cos(d2a(pTurtle->orient+90+45));
 		pos.y=pTurtle->y-(pTurtle->icon_height*sqrt(2)/2)*sin(d2a(pTurtle->orient+90+45));
-		DrawTextureEx(pTurtle->icon,pos,pTurtle->orient+90,1,pWorld->back_color);
+		DrawTextureEx(pTurtle->icon,pos,pTurtle->orient+90,1,WHITE);
 	}
 	if (pWorld->use_grid && !pWorld->hide_grid) {
 		char buffer[200];
 		sprintf(buffer,"(%d,%d)",(int)(round(getX())),(int)(round(getY())));
 		DrawText(buffer,pWorld->width-10-GetFontDefault().baseSize*strlen(buffer),
-			pWorld->height-10-GetFontDefault().baseSize,20,pTurtle->pen_color);
+			pWorld->height-10-GetFontDefault().baseSize,20,WHITE);
 	}
 	EndDrawing();
 	UnloadTexture(world_texture);
