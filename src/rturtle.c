@@ -88,11 +88,11 @@ static void displayWorld() {
 	BeginDrawing();
 	ClearBackground(pWorld->back_color);
 	if (pWorld->use_background_image && !pWorld->hide_background_image) {
-		TraceLog(LOG_ERROR,"ttt");
+		///TraceLog(LOG_ERROR,"ttt");
 		DrawTexture(pWorld->background,0,0,WHITE);
 	}
 	if (pWorld->use_grid && !pWorld->hide_grid) {
-		TraceLog(LOG_ERROR,"ttt1");
+		///TraceLog(LOG_ERROR,"ttt1");
 		DrawTexture(pWorld->grids,0,0,WHITE);			
 	}
 	DrawTexture(world_texture,0,0,WHITE);	
