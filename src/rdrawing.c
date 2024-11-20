@@ -184,7 +184,7 @@ void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color) {
 //	}
 //} 
 
-void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
+void ImageDrawLineEx2(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color) {
 	if (lineWidth==1) {
 		ImageDrawLine(dst,x0,y0,x1,y1,color);
 		return;
@@ -758,7 +758,7 @@ void ImageFillPolygonEx(Image* dst,int* vertice_x, int * vertice_y, int num_vert
 
 void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_vertice, int lineWidth, Color color) {
 	for (int i=0;i<num_vertice;i++) {
-		ImageDrawLineEx(dst,vertice_x[i],vertice_y[i],
+		ImageDrawLineEx2(dst,vertice_x[i],vertice_y[i],
 			vertice_x[(i+1)%num_vertice],vertice_y[(i+1)%num_vertice],
 			lineWidth,
 			color
@@ -768,7 +768,7 @@ void ImageDrawPolygonEx(Image* dst,int* vertice_x,  int * vertice_y, int num_ver
 
 void ImageDrawPolylineEx(Image* dst,int* points_x,  int * points_y, int num_vertice, int lineWidth, Color color) {
 	for (int i=0;i<num_vertice-1;i++) {
-		ImageDrawLineEx(dst,points_x[i],points_y[i],
+		ImageDrawLineEx2(dst,points_x[i],points_y[i],
 			points_x[i+1],points_y[i+1],
 			lineWidth,
 			color
@@ -914,10 +914,10 @@ void ImageDrawRectangleEx(Image* dst, int left, int top, int width, int height, 
 		swapInt(&left,&right);
 	if (top>bottom)
 		swapInt(&top,&bottom);
-	ImageDrawLineEx(dst,left,top,right,top,borderWidth,color);
-	ImageDrawLineEx(dst,right,top,right,bottom,borderWidth,color);
-	ImageDrawLineEx(dst,left,bottom,right,bottom,borderWidth,color);
-	ImageDrawLineEx(dst,left,top,left,bottom,borderWidth,color);
+	ImageDrawLineEx2(dst,left,top,right,top,borderWidth,color);
+	ImageDrawLineEx2(dst,right,top,right,bottom,borderWidth,color);
+	ImageDrawLineEx2(dst,left,bottom,right,bottom,borderWidth,color);
+	ImageDrawLineEx2(dst,left,top,left,bottom,borderWidth,color);
 }
 
 void ImageFillRoundRectEx(Image* dst, int left, int top, int width, int height, int rx, int ry,  Color fillColor) {
@@ -1097,10 +1097,10 @@ void ImageDrawRoundRectEx(Image* dst, int left, int top, int width, int height, 
 			YChange2+=twoASquare2;
 		}				
 	}	
-	ImageDrawLineEx(dst,bx1,by0,bx2,by0,borderWidth,color);
-	ImageDrawLineEx(dst,bx1,by3,bx2,by3,borderWidth,color);
-	ImageDrawLineEx(dst,bx0,by1,bx0,by2,borderWidth,color);
-	ImageDrawLineEx(dst,bx3,by1,bx3,by2,borderWidth,color);
+	ImageDrawLineEx2(dst,bx1,by0,bx2,by0,borderWidth,color);
+	ImageDrawLineEx2(dst,bx1,by3,bx2,by3,borderWidth,color);
+	ImageDrawLineEx2(dst,bx0,by1,bx0,by2,borderWidth,color);
+	ImageDrawLineEx2(dst,bx3,by1,bx3,by2,borderWidth,color);
 }
 
 static float normalizedAngle(float angle) {
@@ -1987,7 +1987,7 @@ void ImageDrawCubicBezierEx(Image* dst, int startX, int startY, int endX, int en
 		int dx=x-oldX;
 		int dy=y-oldY;
 		if (dx!=0 || dy!=0) {
-			ImageDrawLineEx(dst,oldX,oldY,x,y,lineWidth,color);
+			ImageDrawLineEx2(dst,oldX,oldY,x,y,lineWidth,color);
 		}
 		oldX=x;
 		oldY=y;
@@ -1995,7 +1995,7 @@ void ImageDrawCubicBezierEx(Image* dst, int startX, int startY, int endX, int en
 	int dx=endX-oldX;
 	int dy=endY-oldY;
 	if (dx!=0 || dy!=0) {
-		ImageDrawLineEx(dst,oldX,oldY,endX,endY,lineWidth,color);
+		ImageDrawLineEx2(dst,oldX,oldY,endX,endY,lineWidth,color);
 	}
 }
 
@@ -2060,9 +2060,9 @@ void ImageDrawSectorEx(Image* dst,int cx, int cy, int radiusX,int radiusY, float
 	float r2=a*b/sqrt(pow(b*cos(endAngle),2)+pow(a*sin(endAngle),2));
 	int x2=round(r2*cos(endAngle));
 	int y2=round(r2*sin(endAngle));
-	ImageDrawLineEx(dst,cx,cy,cx+x1,cy-y1,lineWidth,color);
+	ImageDrawLineEx2(dst,cx,cy,cx+x1,cy-y1,lineWidth,color);
 	if (x1!=x2 || y1!=y2)
-		ImageDrawLineEx(dst,cx,cy,cx+x2,cy-y2,lineWidth,color);
+		ImageDrawLineEx2(dst,cx,cy,cx+x2,cy-y2,lineWidth,color);
 }
 
 void ImageSetJoinStyle(ImageJoinStyle style) {

@@ -137,7 +137,7 @@ extern "C" {            // Prevents name mangling of functions
 	ImageJoinStyle ImageGetJoinStyle();
 	
 	void ImageDrawPointEx(Image* dst,int x, int y, int pointSize, Color color);
-	void ImageDrawLineEx(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color);
+	void ImageDrawLineEx2(Image* dst,int x0, int y0, int x1, int y1, int lineWidth, Color color);
 	void ImageDrawEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, int lineWidth, Color color);
 	void ImageDrawCircleEx(Image* dst, int cx, int cy, int radius, int lineWidth, Color color);
 	void ImageFillEllipseEx(Image* dst, int cx, int cy, int radiusX, int radiusY, Color fillColor);
