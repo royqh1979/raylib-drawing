@@ -15,7 +15,7 @@ typedef struct
 {
 	double x;
 	double y;
-	double orient; //Í·Ö¸Ïò½Ç¶È
+	double orient; //å¤´æŒ‡å‘è§’åº¦
 	bool is_pen_down;
 	Color pen_color;
 	int pen_size;
@@ -23,7 +23,7 @@ typedef struct
 	Texture2D icon;
 	double icon_width;
 	double icon_height;
-	bool is_show; //ÊÇ·ñÏÔÊ¾º£¹ê
+	bool is_show; //æ˜¯å¦æ˜¾ç¤ºæµ·é¾Ÿ
 	bool is_filling;
 	IntList path_x;
 	IntList path_y;
@@ -2124,7 +2124,7 @@ static void prepareTurtleOriginIcon()
 
 
 static void doDrawLineF(float x0, float y0, float x1, float y1) {
-	ImageDrawLineEx(&pWorld->world_image,round(x0),round(y0),round(x1),round(y1),pTurtle->pen_size,pTurtle->pen_color);
+	ImageDrawLineEx2(&pWorld->world_image,round(x0),round(y0),round(x1),round(y1),pTurtle->pen_size,pTurtle->pen_color);
 }
 
 void drawLine(int x0, int y0, int x1, int y1) {
@@ -2132,7 +2132,7 @@ void drawLine(int x0, int y0, int x1, int y1) {
 		return ;
 	if (pWorld->window_should_close)
 		return ;
-	ImageDrawLineEx(
+	ImageDrawLineEx2(
 		&pWorld->world_image,
 		pWorld->origin_x+x0,
 		pWorld->origin_y-y0,
@@ -2407,8 +2407,8 @@ void arc(double radius, int degree) {
 		return;
 	
 	
-	int r_sign = radius > 0 ? 1 : -1;  // radiusÊÇÕıÔòÊÇÄæÊ±ÖÓ»­
-	int d_sign = degree > 0 ? 1 : -1;  //bk´óÓÚ0ÔòÊÇË³×Å·½Ïò»­,·ñÔòµ¹×Å»­
+	int r_sign = radius > 0 ? 1 : -1;  // radiusæ˜¯æ­£åˆ™æ˜¯é€†æ—¶é’Ÿç”»
+	int d_sign = degree > 0 ? 1 : -1;  //bkå¤§äº0åˆ™æ˜¯é¡ºç€æ–¹å‘ç”»,å¦åˆ™å€’ç€ç”»
 	if (degree<0)
 		degree=-degree;
 	radius = fabs(radius);
@@ -3140,7 +3140,7 @@ void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridC
 	x2=pWorld->origin_x;
 	while (x1>=0 || x2<pWorld->width) {
 		if (x1>=0) {
-			ImageDrawLineEx(&image, x1,0,x1,pWorld->height, gridLineWidth, gridColorX);
+			ImageDrawLineEx2(&image, x1,0,x1,pWorld->height, gridLineWidth, gridColorX);
 			sprintf(buffer,"%d",x1-pWorld->origin_x);
 			if (x1< GetFontDefault().baseSize+10) {
 				ImageDrawText(&image, buffer,GetFontDefault().baseSize+10 + gridLineWidth/2+10 ,gridLineWidth/2+10,labelFontSize,gridColorX);				
@@ -3149,7 +3149,7 @@ void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridC
 			}
 		}
 		if (x2<pWorld->width) {
-			ImageDrawLineEx(&image, x2,0,x2,pWorld->height, gridLineWidth, gridColorX);			
+			ImageDrawLineEx2(&image, x2,0,x2,pWorld->height, gridLineWidth, gridColorX);
 			sprintf(buffer,"%d",x2-pWorld->origin_x);
 			ImageDrawText(&image, buffer, x2 + gridLineWidth/2+10 ,gridLineWidth/2+10,labelFontSize,gridColorX);
 		}
@@ -3160,7 +3160,7 @@ void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridC
 	y2=pWorld->origin_y;
 	while (y1>=0 || y2<pWorld->height) {
 		if (y1>=0) {
-			ImageDrawLineEx(&image, 0,y1,pWorld->width, y1, gridLineWidth, gridColorY);
+			ImageDrawLineEx2(&image, 0,y1,pWorld->width, y1, gridLineWidth, gridColorY);
 			sprintf(buffer,"%d",pWorld->origin_y-y1);
 			if (y1 < GetFontDefault().baseSize+10) {
 				ImageDrawText(&image, buffer, gridLineWidth/2+10 , GetFontDefault().baseSize+10  + gridLineWidth/2+10,labelFontSize,gridColorY);
@@ -3169,7 +3169,7 @@ void createGrids(int gridSize, int gridLineWidth, int labelFontSize, Color gridC
 			}
 		}
 		if (y2<pWorld->height) {
-			ImageDrawLineEx(&image, 0,y2,pWorld->width, y2, gridLineWidth, gridColorY);			
+			ImageDrawLineEx2(&image, 0,y2,pWorld->width, y2, gridLineWidth, gridColorY);
 			sprintf(buffer,"%d",pWorld->origin_y-y2);
 			ImageDrawText(&image, buffer, gridLineWidth/2+10 , y2+ gridLineWidth/2+10,labelFontSize,gridColorY);
 		}
